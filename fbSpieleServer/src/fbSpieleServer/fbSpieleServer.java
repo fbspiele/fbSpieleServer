@@ -1,5 +1,7 @@
 package fbSpieleServer;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -13,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
 import fbSpieleServer.clientacceptingthread;
 
@@ -26,7 +31,10 @@ public class fbSpieleServer {
 	static String serverIp = "";
 	static ServerSocket server = null;
     public static volatile List<BeerlyClient> clientlist;
+    public static volatile List<WoLiegtWasObject> woliegtWasList = new ArrayList<>();
     static JPanel panel;
+    static DefaultTableModel tableModel;
+    static JTable jTable;
     static JList listNamesInFrame;
     static JList listTeamsInFrame;
     static JList listRolesInFrame;
@@ -43,8 +51,17 @@ public class fbSpieleServer {
     static String schatzFrageAbstandTeam2String = "";
     static String schatzFrageAntwortTeam1String = "";
     static String schatzFrageAntwortTeam2String = "";
+    
+
+    static Double woLiegtWasRichtigesPhi;
+    static Double woLiegtWasRichtigesTheta;
+    static int aktuelleWoLiegtWasFrage = -1;
+    
+    
     static int schatzFrageNahesteAntwortTeam = 0;
     static presentation presentation;
+    
+    static int guessComparator = 1;
     
     static final int codeNumberDelayedBuzzer = 0;
     static final int codeNumberDelayedReturnToPanel = 1;
@@ -156,7 +173,22 @@ public class fbSpieleServer {
     	updateClientList();
     }
     
-	public static void updateClientList(){
+    
+    public static void updateClientList(){
+
+
+		BeerlyClient nullClient = new BeerlyClient(null, null);
+		
+		tableModel.getDataVector().clear();
+
+    	tableModel.addRow(nullClient.getTableRightAnswerArray(guessComparator));
+    	for(BeerlyClient client:clientlist) {
+        	tableModel.addRow(client.getTableArray(guessComparator));
+    	}
+    	
+    	resizeColumnWidth(jTable);
+		jTable.setModel(tableModel);
+		
 		StringBuilder sb = new StringBuilder();
 
 		DefaultListModel listModelNames = new DefaultListModel();
@@ -198,6 +230,23 @@ public class fbSpieleServer {
     	System.out.println("clientlist: "+sb.toString());
     }
     
+    public static void resizeColumnWidth(JTable table) {
+    	//https://stackoverflow.com/a/17627497
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            int width = 100; // Min width
+            int maxWidth = 150; 
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width +1 , width);
+            }
+            if(width > maxWidth)
+                width=maxWidth;
+            columnModel.getColumn(column).setPreferredWidth(width+10);
+        }
+    }
+    
 	public static void frameStuff() {
     	//1. Create the frame.
     	frame = new JFrame("beerly mpics server");
@@ -231,23 +280,45 @@ public class fbSpieleServer {
         listTeamsInFrame = new JList();
         listRolesInFrame = new JList();
         listIpsInFrame = new JList();
-        panel = new JPanel();
-        panel.add(getPasswordSaltPanel());
-        panel.add(getGeneralPanel());
-        panel.add(getAddSubPointsPanel());
-        panel.add(getWerIstDasPanel());
-        panel.add(getSchatzFragePanel());
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panelOben = new JPanel();
+        JPanel panelUnten = new JPanel();
+        
+        panelOben.add(getPasswordSaltPanel());
+        panelOben.add(getGeneralPanel());
+        panelOben.add(getAddSubPointsPanel());
+        panelOben.add(getWerIstDasPanel());
+        //panelOben.add(getSchatzFragePanel());
+        panelOben.add(getWoliegtWasPanel());
         
         
-        panel.add(b1);
-        panel.add(b2);
+        panelOben.add(b1);
+        panelOben.add(b2);
     	//frame.add(b2);
+
+		BeerlyClient nullClient = new BeerlyClient(null, null);
+		
+		tableModel = new DefaultTableModel(nullClient.getTableHeadersArray(),0);
+        jTable = new JTable(tableModel);
         
-        panel.add(listNamesInFrame);
-        panel.add(listTeamsInFrame);
-        panel.add(listRolesInFrame);
-        panel.add(listIpsInFrame);
+
+        jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        JScrollPane jTableScrollPanel = new JScrollPane(jTable);
+        jTableScrollPanel.setPreferredSize(new Dimension(1200,800));
+        panelUnten.add(jTableScrollPanel);
+        resizeColumnWidth(jTable);
+        //panel.add(jTable);
         
+        
+        panelOben.add(listNamesInFrame);
+        panelOben.add(listTeamsInFrame);
+        panelOben.add(listRolesInFrame);
+        panelOben.add(listIpsInFrame);
+        
+        panel.add(panelOben);
+        panel.add(panelUnten);
+
         frame.getContentPane().add(panel);
 
         //frame.getContentPane().add(panel);
@@ -256,6 +327,7 @@ public class fbSpieleServer {
     	//4. Size the frame.
     	frame.pack();
 
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     	frame.setLocation(100, 100);
     	
     	//5. Show it.
@@ -632,21 +704,155 @@ public class fbSpieleServer {
 		return panel;
 	}
 	
-	static JPanel getSchatzFragePanel() {
+	
+	static int upateWoLiegtWasFragen(String filename) {
+
+		
+		
+    	Path path = Path.of("woLiegtWas",filename);
+    	String fileContent;
+		try {
+			 fileContent = new String(Files.readString(path));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return -1;
+		}
+		
+		System.out.println(fileContent);
+		woliegtWasList = new ArrayList<>();
+		int counter = 0;
+		
+    	String[] lines = fileContent.split("\n");
+    	for (int i = 0; i< lines.length; i++) {
+    		System.out.println(lines[i]);
+    		
+    		if(lines[i].contains(",")&&i!=0) {
+    			counter++;
+    			WoLiegtWasObject object = new WoLiegtWasObject();
+    			object.name = lines[i-1];
+    			String[] substrings = lines[i].split(",");
+    			object.theta = Double.valueOf(substrings[0]);	// google macht zuerst theta dann phi
+    			object.phi = Double.valueOf(substrings[1]);
+    			woliegtWasList.add(object);
+    		}
+    	}
+
+		updateAktuelleFrageNummer(1);
+    	return counter;
+		
+	}
+	static JTextField frageNummerText, keyText;
+	
+	
+	static void updateAktuelleFrageNummer(int newNumber) {
+		aktuelleWoLiegtWasFrage = newNumber;
+    	frageNummerText.setText("frage nr "+aktuelleWoLiegtWasFrage);
+    	System.out.println(woliegtWasList.size());
+    	if(woliegtWasList.size()>0&& woliegtWasList.size()>=aktuelleWoLiegtWasFrage-1) {
+        	if(woliegtWasList.get(aktuelleWoLiegtWasFrage-1)!=null) {
+        		if(keyText!=null) {
+        			keyText.setText(woliegtWasList.get(aktuelleWoLiegtWasFrage-1).name);
+        		}
+        	}
+        	else {
+        		if(keyText!=null) {
+                	keyText.setText("nächste frage text a");
+        		}
+        	}
+    	}
+    	else {
+    		if(keyText!=null) {
+            	keyText.setText("nächste frage text b");
+    		}
+    	}
+	}
+	
+	static JPanel getWoliegtWasPanel() {
 		
 		
 		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-    	panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 50));		
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));	
 
     	
     	JTextField titleText = new JTextField();
-    	titleText.setText("schätzfrage");
+    	titleText.setText("wo liegt was");
     	titleText.setHorizontalAlignment(JTextField.CENTER);
     	
     	panel.add(titleText);
+    	
+    	JButton fileButton = new JButton();
+    	fileButton.setText("file?");
+    	fileButton.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+		        String filename = JOptionPane.showInputDialog(null, "file name?");
+		        int fragenAnzahl = upateWoLiegtWasFragen(filename);
+		        fileButton.setText("file = "+filename+" ("+fragenAnzahl+" Fragen)");
+			}});
+    	
+    	panel.add(fileButton);
+    	
+    	JPanel fragenNavigationPanel = new JPanel();
+    	fragenNavigationPanel.setLayout(new BoxLayout(fragenNavigationPanel, BoxLayout.X_AXIS));
 
-    	JButton schatzFrageStarten = new JButton();
+    	
+
+    	frageNummerText = new JTextField();
+    	frageNummerText.setHorizontalAlignment(JTextField.CENTER);
+		updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage);
+    	
+    	
+    	
+    	JButton frageNummerMinus = new JButton();
+    	frageNummerMinus.setText("-1");
+    	frageNummerMinus.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage - 1);
+			}});
+
+
+    	
+    	JButton frageNummerPlus = new JButton();
+    	frageNummerPlus.setText("+1");
+    	frageNummerPlus.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage + 1);
+			}});
+    	fragenNavigationPanel.add(frageNummerMinus);
+    	fragenNavigationPanel.add(frageNummerText);
+    	fragenNavigationPanel.add(frageNummerPlus);
+
+    	panel.add(fragenNavigationPanel);
+    	
+
+    	keyText = new JTextField();
+    	keyText.setText("nächste frage key");
+    	keyText.setHorizontalAlignment(JTextField.CENTER);
+
+    	JButton startFrage = new JButton();
+    	startFrage.setText("start diese frage (reset)");
+    	startFrage.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			for(BeerlyClient client : clientlist) {
+    				client.resetWhereIsWhatAnswer();
+    			}
+    			WoLiegtWasObject object = woliegtWasList.get(aktuelleWoLiegtWasFrage-1);
+    			woLiegtWasRichtigesPhi = object.phi;
+    			woLiegtWasRichtigesTheta = object.theta;
+    			updateClientList();
+    		}
+    	});
+    	
+
+    	panel.add(keyText);
+    	panel.add(startFrage);
+    	
+    	
+    	
+    	
+    	
+
+    	/*JButton schatzFrageStarten = new JButton();
     	schatzFrageStarten.setText("starten/beenden");
     	schatzFrageStarten.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
@@ -658,10 +864,10 @@ public class fbSpieleServer {
     	});
     	
     	panel.add(schatzFrageStarten);
-    	
-    	JButton richtigeAntwort = new JButton();
-    	richtigeAntwort.setText("antwort?");
-    	richtigeAntwort.addActionListener(new ActionListener(){
+    	*/
+    	JButton richtigeWoAntwort = new JButton();
+    	richtigeWoAntwort.setText("antwort?");
+    	richtigeWoAntwort.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
 				//System.out.println(buttonWerIstDasStarten.getText() + " clicked");
 
@@ -671,9 +877,9 @@ public class fbSpieleServer {
     	        String inputString = JOptionPane.showInputDialog(null, "richtige antwort?");
     	        schatzFrageRichtigeAntwort = Double.parseDouble(inputString);
     	        
+    	        updateClientList();
     	        
-    	        
-    	        richtigeAntwort.setText("antwort = "+schatzFrageRichtigeAntwort);
+    	        richtigeWoAntwort.setText("antwort = "+schatzFrageRichtigeAntwort);
 
     	        presentation.spielLeitungSchatzungEingegeben = true;
     	        presentation.overViewPanelAnzeigen();
@@ -683,7 +889,7 @@ public class fbSpieleServer {
     	});
     	
     	
-    	
+    	/*
     	panel.add(richtigeAntwort);
     	
 
@@ -751,6 +957,7 @@ public class fbSpieleServer {
 
     	
     	panel.add(auflosung);		
+    	*/
     	return panel;
 		
 	}

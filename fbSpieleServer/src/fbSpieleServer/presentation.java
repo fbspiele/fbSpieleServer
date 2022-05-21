@@ -35,9 +35,11 @@ public class presentation implements Runnable {
 	final static String leftArrowPath = "src/schatzfragenpfeillinks.png";
 	
 	//int frameWidth = 1920;
-	int frameWidth = 1920;
-	int defaultFrameWidth = 1920;
-	int defaultFrameHeight = 1055;
+	int frameWidth = 100;
+	//int defaultFrameWidth = 1920;
+	int defaultFrameWidth = 100;
+	//int defaultFrameHeight = 1055;
+	int defaultFrameHeight = 100;
 	int defaultIconWidth = 500;
 	
 	

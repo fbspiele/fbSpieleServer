@@ -41,7 +41,7 @@ public class listeningThreadClass implements Runnable {
 	}
 	
 	public void datenVerarbeiten(String msg) {
-		//System.out.println(msg);
+		System.out.println(msg);
 		
 		//todoSCHÄTZFRAGEANTWORT
 		//dannEinfachMessageBoxUndWeiterLeite
@@ -63,6 +63,23 @@ public class listeningThreadClass implements Runnable {
 				}
 				System.out.println("schätzfrageantwort von "+client.name+" (team "+ client.team + "): "+antwort);
 			}
+		}
+		
+		
+		if(msg.contains("xxxwoLiegtWasMyCoordsPhiABC")) {
+			int phiStart = msg.indexOf("xxxwoLiegtWasMyCoordsPhiABC") + "xxxwoLiegtWasMyCoordsPhiABC".length();
+			int phiEnd = msg.indexOf("DEFmyCoordsThetaGHI");
+
+			int thetaStart = msg.indexOf("DEFmyCoordsThetaGHI") + "DEFmyCoordsThetaGHI".length();
+			int thetaEnd = msg.indexOf("JKL");
+			
+			String strPhi = msg.substring(phiStart, phiEnd);
+			String strTheta = msg.substring(thetaStart, thetaEnd);
+			
+			double phi = Double.valueOf(strPhi);
+			double theta = Double.valueOf(strTheta);
+			
+			client.updateWhereIsWhatAnswer(phi, theta);
 		}
 		
 
