@@ -1,5 +1,7 @@
 package fbSpieleServer;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 public class BeerlyClient {
@@ -67,7 +69,6 @@ public class BeerlyClient {
 	
 	void updateGuessDistance(int comparison) {
 		if(guessAnswer==null) {
-			System.out.println("error no guessAnswer or rightGuessAnswer for "+name+"("+socket.getInetAddress()+")");
 			guessDistance = null;
 			return;
 		}
@@ -137,7 +138,7 @@ public class BeerlyClient {
     }
 	
 	Object[] getTableHeadersArray() {
-		Object[] returnObject = {"ip", "name", "team", "role", "schätztn", "schätztn dist", "wo phi", "wo theta", "wo dist"};
+		Object[] returnObject = {"ip", "name", "team", "role", "color", "schätztn", "schätztn dist", "wo phi", "wo theta", "wo dist"};
 		return  returnObject;
 	}
 	
@@ -162,15 +163,25 @@ public class BeerlyClient {
 			rightWhereIsWhatAnswerDistString = String.valueOf(calcDistanceBetweenCoords(new double[] {fbSpieleServer.woLiegtWasRichtigesPhi,fbSpieleServer.woLiegtWasRichtigesTheta}, new double[] {fbSpieleServer.woLiegtWasRichtigesPhi,fbSpieleServer.woLiegtWasRichtigesTheta}));
 		}
 		 
-		Object[] returnObject = {"", "right answer", "", "", rightGuessAnswerString, rightGuessDistanceString, rightWhereIsWhatAnswerPhiString, rightWhereIsWhatAnswerThetaString, rightWhereIsWhatAnswerDistString};
+		Object[] returnObject = {"", "right answer", "", "", "", rightGuessAnswerString, rightGuessDistanceString, rightWhereIsWhatAnswerPhiString, rightWhereIsWhatAnswerThetaString, rightWhereIsWhatAnswerDistString};
 		return  returnObject;
 	}
 
 	Object[] getTableArray(int guessComparison) {
 		updateGuessDistance(guessComparison);
 		updateWhereIsWhatDistance();
-		Object[] returnObject = {socket.getInetAddress(), name, team, role, guessAnswer, guessDistance, whereIsWhatAnswerPhi, whereIsWhatAnswerTheta, whereIsWhatAnswerDistance};
+		Object[] returnObject = {socket.getInetAddress(), name, team, role, color, guessAnswer, guessDistance, whereIsWhatAnswerPhi, whereIsWhatAnswerTheta, whereIsWhatAnswerDistance};
 		
 		return returnObject;
+	}
+
+	public void sendToSocket(String msg) {
+		try {
+			String encryptedMsg = this.crypto.encryptHex(msg);
+			new PrintWriter(this.socket.getOutputStream(),true).println(encryptedMsg);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

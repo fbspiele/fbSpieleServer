@@ -117,6 +117,7 @@ public class fbSpieleServer {
 		}
         
     	frameStuff();
+    	updateClientList();
     }
 
     private static String getServerIp() {
@@ -179,7 +180,9 @@ public class fbSpieleServer {
 
 		BeerlyClient nullClient = new BeerlyClient(null, null);
 		
-		tableModel.getDataVector().clear();
+		if(!tableModel.getDataVector().isEmpty()) {
+			tableModel.getDataVector().clear();
+		}
 
     	tableModel.addRow(nullClient.getTableRightAnswerArray(guessComparator));
     	for(BeerlyClient client:clientlist) {
@@ -191,18 +194,6 @@ public class fbSpieleServer {
 		
 		StringBuilder sb = new StringBuilder();
 
-		DefaultListModel listModelNames = new DefaultListModel();
-		DefaultListModel listModelTeams = new DefaultListModel();
-		DefaultListModel listModelRoles = new DefaultListModel();
-		DefaultListModel listModelIps = new DefaultListModel();
-		listModelNames.addElement("name");
-		listModelNames.addElement(" ");
-		listModelTeams.addElement("team");
-		listModelTeams.addElement(" ");
-		listModelRoles.addElement("role");
-		listModelRoles.addElement(" ");
-		listModelIps.addElement("ip");
-		listModelIps.addElement(" ");
 		for (BeerlyClient client : clientlist) {
 			sb.append("[");
 			sb.append(client.socket.toString());
@@ -213,19 +204,11 @@ public class fbSpieleServer {
 			sb.append(", role=");
 			sb.append(client.role);
 			sb.append("]");
-			listModelNames.addElement(client.name);
-			listModelTeams.addElement(client.team);
 			String roleString = client.role;
 			if(roleString.equals("")) {
 				roleString = " ";
 			}
-			listModelRoles.addElement(roleString);
-			listModelIps.addElement(client.socket.getInetAddress().getHostAddress());
 		}
-		listNamesInFrame.setModel(listModelNames);
-		listTeamsInFrame.setModel(listModelTeams);
-		listRolesInFrame.setModel(listModelRoles);
-		listIpsInFrame.setModel(listModelIps);
 		frame.pack();
     	System.out.println("clientlist: "+sb.toString());
     }
@@ -276,10 +259,6 @@ public class fbSpieleServer {
         
         
         
-        listNamesInFrame = new JList();
-        listTeamsInFrame = new JList();
-        listRolesInFrame = new JList();
-        listIpsInFrame = new JList();
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         JPanel panelOben = new JPanel();
@@ -310,11 +289,6 @@ public class fbSpieleServer {
         resizeColumnWidth(jTable);
         //panel.add(jTable);
         
-        
-        panelOben.add(listNamesInFrame);
-        panelOben.add(listTeamsInFrame);
-        panelOben.add(listRolesInFrame);
-        panelOben.add(listIpsInFrame);
         
         panel.add(panelOben);
         panel.add(panelUnten);
@@ -768,6 +742,33 @@ public class fbSpieleServer {
     	}
 	}
 	
+	final static String woLiegtWasAuflosungStart = "woLiegtWasAuflosungStart";
+	final static String woLiegtWasAuflosungEnd = "woLiegtWasAuflosungEnd";
+	
+
+	final static String entrySendTextGenerelSplitter = "entrySendTextGenerelSplitter";
+	
+	final static String entrySendTextPhiStart = "entrySendTextPhiStart";
+	final static String entrySendTextPhiEnd = "entrySendTextPhiEnd";
+	final static String entrySendTextThetaStart = "entrySendTextThetaStart";
+	final static String entrySendTextThetaEnd = "entrySendTextThetaEnd";
+	final static String entrySendTextColorStart = "entrySendTextColorStart";
+	final static String entrySendTextColorEnd = "entrySendTextColorEnd";
+	final static String entrySendTextExtraStart = "entrySendTextExtraStart";
+	final static String entrySendTextExtraEnd = "entrySendTextExtraEnd";
+	
+	final static String entrySendTextExtraRightAnswer = "entrySendTextExtraRightAnswer";
+	final static String entrySendTextExtraClosest = "entrySendTextExtraClosest";
+
+	final static String closestGuessSendText = "closestGuessSendText";
+	
+	final static String getWoLiegtWasEntrySendText(Double phi, Double theta, String color, String extraText) {
+		return entrySendTextPhiStart+String.valueOf(phi)+entrySendTextPhiEnd
+				+entrySendTextThetaStart+String.valueOf(theta)+entrySendTextThetaEnd
+				+entrySendTextColorStart+color+entrySendTextColorEnd
+				+entrySendTextExtraStart+extraText+entrySendTextExtraEnd;
+	}
+	
 	static JPanel getWoliegtWasPanel() {
 		
 		
@@ -844,8 +845,61 @@ public class fbSpieleServer {
     	});
     	
 
+    	JButton aufloesen = new JButton();
+    	aufloesen.setText("auflösen");
+    	aufloesen.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			
+    			BeerlyClient closestClient = null;
+    			for(BeerlyClient client:clientlist) {
+    				if(closestClient==null) {
+    					closestClient = client;
+    				}
+    				else {
+    					if(closestClient.whereIsWhatAnswerDistance != null && client.whereIsWhatAnswerDistance != null) {
+        					if(closestClient.whereIsWhatAnswerDistance > client.whereIsWhatAnswerDistance) {
+        						closestClient = client;
+        					}
+    					}
+    				}
+    			}
+
+    			StringBuilder stringBuilder = new StringBuilder();
+    			stringBuilder.append(entrySendTextGenerelSplitter);
+    			
+
+    			if(woLiegtWasRichtigesPhi != null && woLiegtWasRichtigesTheta != null) {
+    				stringBuilder.append(getWoLiegtWasEntrySendText(woLiegtWasRichtigesPhi, woLiegtWasRichtigesTheta, "#000000", entrySendTextExtraRightAnswer));
+        			stringBuilder.append(entrySendTextGenerelSplitter);
+    			}
+				
+    			for(BeerlyClient client:clientlist) {
+    				String extraText = "";
+    				if(client == closestClient) {
+    					extraText = entrySendTextExtraClosest;
+    				}
+    				if(client.whereIsWhatAnswerPhi!=null && client.whereIsWhatAnswerTheta != null && client.color!=null) {
+    					stringBuilder.append(getWoLiegtWasEntrySendText(client.whereIsWhatAnswerPhi, client.whereIsWhatAnswerTheta, client.color, extraText));
+    	    			stringBuilder.append(entrySendTextGenerelSplitter);
+    				}    				
+    			}
+    			
+    			System.out.println(clientlist.size());
+    			
+    			String totalSendText = woLiegtWasAuflosungStart + stringBuilder.toString() + woLiegtWasAuflosungEnd;
+    			
+    			System.out.println(totalSendText);
+
+    			for(BeerlyClient client:clientlist) {
+    				client.sendToSocket(totalSendText);
+    			}
+    		}
+    	});
+    	
+
     	panel.add(keyText);
     	panel.add(startFrage);
+    	panel.add(aufloesen);
     	
     	
     	

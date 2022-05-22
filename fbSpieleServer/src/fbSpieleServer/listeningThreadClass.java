@@ -102,9 +102,42 @@ public class listeningThreadClass implements Runnable {
 			sendToSocket("pingResponse");
 		}
 		
-		if(msg.indexOf("name")>-1) {
-			String newName = msg.substring(msg.indexOf("name")+4);
+		String newNameAnfangString = "myNewName";
+		String newNameEndString = "endMyNewName";
+		
+		if(msg.contains(newNameAnfangString)) {
+			String newName = msg.substring(msg.indexOf(newNameAnfangString)+newNameAnfangString.length(), msg.indexOf(newNameEndString));
 			client.updateName(newName);
+			//System.out.println("name of "+client.socket.getInetAddress().getHostAddress()+": "+newName);
+		}
+		
+		String newColorAnfangString = "myNewColor";
+		String newColorEndString = "endMyNewColor";
+		
+		if(msg.contains(newColorAnfangString)) {
+			String newColor = msg.substring(msg.indexOf(newColorAnfangString)+newColorAnfangString.length(), msg.indexOf(newColorEndString));
+			client.updateColor(newColor);
+			//System.out.println("name of "+client.socket.getInetAddress().getHostAddress()+": "+newName);
+		}
+		
+
+		String newTeamAnfangString = "myNewTeam";
+		String newTeamEndString = "endMyNewTeam";
+		
+		if(msg.contains(newTeamAnfangString)) {
+			String newTeamString = msg.substring(msg.indexOf(newTeamAnfangString)+newTeamAnfangString.length(), msg.indexOf(newTeamEndString));
+			int newTeam = Integer.parseInt(newTeamString);
+			client.updateTeam(newTeam);
+			//System.out.println("name of "+client.socket.getInetAddress().getHostAddress()+": "+newName);
+		}
+		
+
+		String newRoleAnfangString = "myNewRole";
+		String newRoleEndString = "endMyNewRole";
+		
+		if(msg.contains(newRoleAnfangString)) {
+			String newRole = msg.substring(msg.indexOf(newRoleAnfangString)+newRoleAnfangString.length(), msg.indexOf(newRoleEndString));
+			client.updateRole(newRole);
 			//System.out.println("name of "+client.socket.getInetAddress().getHostAddress()+": "+newName);
 		}
 
@@ -171,14 +204,9 @@ public class listeningThreadClass implements Runnable {
 	    return result;
 	}
 	
+	
 	public void sendToSocket(String msg) {
-		try {
-			String encryptedMsg = client.crypto.encryptHex(msg);
-			new PrintWriter(client.socket.getOutputStream(),true).println(encryptedMsg);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		client.sendToSocket(msg);
 	}
 	
 	public static void playBuzzerSound() {
