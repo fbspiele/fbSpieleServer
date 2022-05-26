@@ -1,4 +1,4 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
 public class WoLiegtWasObject {
 	String name;

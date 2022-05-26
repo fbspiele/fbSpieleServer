@@ -1,4 +1,4 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,28 +35,28 @@ public class BeerlyClient {
 	
 	void updateName(String newName){
 		name = newName;
-		fbSpieleServer.updateClientList();
+		FbSpieleServer.updateClientList();
 	}
 	void updateTeam(int newTeam) {
 		team = newTeam;
-		fbSpieleServer.updateClientList();
+		FbSpieleServer.updateClientList();
 	}
 	void updateRole(String newRole) {
 		role = newRole;
-		fbSpieleServer.updateClientList();
+		FbSpieleServer.updateClientList();
 	}
 	void updateColor(String newColor){
 		color = newColor;
-		fbSpieleServer.updateClientList();
+		FbSpieleServer.updateClientList();
 	}
 	void updateGuessAnswer(Double newAnswer, int distanceComparison) {
 		guessAnswer = newAnswer;
-		fbSpieleServer.updateClientList();
+		FbSpieleServer.updateClientList();
 	}
 	void updateWhereIsWhatAnswer(Double newPhi, Double newTheta) {
 		whereIsWhatAnswerPhi = newPhi;
 		whereIsWhatAnswerTheta = newTheta;
-		fbSpieleServer.updateClientList();
+		FbSpieleServer.updateClientList();
 	}
 	void resetWhereIsWhatAnswer() {
 		whereIsWhatAnswerPhi = null;
@@ -64,7 +64,7 @@ public class BeerlyClient {
 		whereIsWhatAnswerDistance = null;
 		rightWhereIsWhatAnswerPhi = null;
 		rightWhereIsWhatAnswerTheta = null;
-		fbSpieleServer.updateClientList();
+		FbSpieleServer.updateClientList();
 	}
 	
 	void updateGuessDistance(int comparison) {
@@ -72,7 +72,7 @@ public class BeerlyClient {
 			guessDistance = null;
 			return;
 		}
-		double tempGuessDistance =  calcGuessDistance(guessAnswer, fbSpieleServer.schatzFrageRichtigeAntwort, comparison);
+		double tempGuessDistance =  calcGuessDistance(guessAnswer, FbSpieleServer.schatzFrageRichtigeAntwort, comparison);
 		if (tempGuessDistance < 0) {
 			guessDistance = null;
 		}
@@ -104,8 +104,8 @@ public class BeerlyClient {
 	}
 	
 	void updateWhereIsWhatDistance() {
-		if(whereIsWhatAnswerPhi != null && whereIsWhatAnswerTheta != null && fbSpieleServer.woLiegtWasRichtigesPhi != null && fbSpieleServer.woLiegtWasRichtigesTheta != null) {
-			whereIsWhatAnswerDistance = calcDistanceBetweenCoords(new double[] {whereIsWhatAnswerPhi,whereIsWhatAnswerTheta}, new double[] {fbSpieleServer.woLiegtWasRichtigesPhi, fbSpieleServer.woLiegtWasRichtigesTheta});
+		if(whereIsWhatAnswerPhi != null && whereIsWhatAnswerTheta != null && FbSpieleServer.woLiegtWasRichtigesPhi != null && FbSpieleServer.woLiegtWasRichtigesTheta != null) {
+			whereIsWhatAnswerDistance = calcDistanceBetweenCoords(new double[] {whereIsWhatAnswerPhi,whereIsWhatAnswerTheta}, new double[] {FbSpieleServer.woLiegtWasRichtigesPhi, FbSpieleServer.woLiegtWasRichtigesTheta});
 		}
 	}
 
@@ -143,24 +143,24 @@ public class BeerlyClient {
 	}
 	
 	Object[] getTableRightAnswerArray(int guessComparison) {
-		String rightGuessAnswerString = String.valueOf(fbSpieleServer.schatzFrageRichtigeAntwort);
-		String rightGuessDistanceString = String.valueOf(calcGuessDistance(fbSpieleServer.schatzFrageRichtigeAntwort, fbSpieleServer.schatzFrageRichtigeAntwort, guessComparison)); 
+		String rightGuessAnswerString = String.valueOf(FbSpieleServer.schatzFrageRichtigeAntwort);
+		String rightGuessDistanceString = String.valueOf(calcGuessDistance(FbSpieleServer.schatzFrageRichtigeAntwort, FbSpieleServer.schatzFrageRichtigeAntwort, guessComparison)); 
 		
 
 		String rightWhereIsWhatAnswerPhiString = "";
 		String rightWhereIsWhatAnswerThetaString = "";
 		String rightWhereIsWhatAnswerDistString = "";
 		
-		if(fbSpieleServer.woLiegtWasRichtigesPhi!=null) {
-			rightWhereIsWhatAnswerPhiString = String.valueOf(fbSpieleServer.woLiegtWasRichtigesPhi);
+		if(FbSpieleServer.woLiegtWasRichtigesPhi!=null) {
+			rightWhereIsWhatAnswerPhiString = String.valueOf(FbSpieleServer.woLiegtWasRichtigesPhi);
 		}
 
-		if(fbSpieleServer.woLiegtWasRichtigesTheta!=null) {
-			rightWhereIsWhatAnswerThetaString = String.valueOf(fbSpieleServer.woLiegtWasRichtigesTheta);
+		if(FbSpieleServer.woLiegtWasRichtigesTheta!=null) {
+			rightWhereIsWhatAnswerThetaString = String.valueOf(FbSpieleServer.woLiegtWasRichtigesTheta);
 		}
 		
-		if(fbSpieleServer.woLiegtWasRichtigesPhi!=null && fbSpieleServer.woLiegtWasRichtigesTheta!=null) {
-			rightWhereIsWhatAnswerDistString = String.valueOf(calcDistanceBetweenCoords(new double[] {fbSpieleServer.woLiegtWasRichtigesPhi,fbSpieleServer.woLiegtWasRichtigesTheta}, new double[] {fbSpieleServer.woLiegtWasRichtigesPhi,fbSpieleServer.woLiegtWasRichtigesTheta}));
+		if(FbSpieleServer.woLiegtWasRichtigesPhi!=null && FbSpieleServer.woLiegtWasRichtigesTheta!=null) {
+			rightWhereIsWhatAnswerDistString = String.valueOf(calcDistanceBetweenCoords(new double[] {FbSpieleServer.woLiegtWasRichtigesPhi,FbSpieleServer.woLiegtWasRichtigesTheta}, new double[] {FbSpieleServer.woLiegtWasRichtigesPhi,FbSpieleServer.woLiegtWasRichtigesTheta}));
 		}
 		 
 		Object[] returnObject = {"", "right answer", "", "", "", rightGuessAnswerString, rightGuessDistanceString, rightWhereIsWhatAnswerPhiString, rightWhereIsWhatAnswerThetaString, rightWhereIsWhatAnswerDistString};

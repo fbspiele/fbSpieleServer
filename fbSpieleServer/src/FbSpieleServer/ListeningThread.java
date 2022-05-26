@@ -1,4 +1,4 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,9 +13,11 @@ import javax.sound.sampled.Clip;
 
 
 
-public class listeningThreadClass implements Runnable {
-	
-	public listeningThreadClass(BeerlyClient recClient) {
+
+public class ListeningThread implements Runnable {
+	FbSpieleServer fbSpieleServer;
+	public ListeningThread(FbSpieleServer fbSpieleServer, BeerlyClient recClient) {
+		this.fbSpieleServer = fbSpieleServer;
 		client = recClient;
 	}
 	BeerlyClient client;
@@ -23,18 +25,29 @@ public class listeningThreadClass implements Runnable {
 	public void run() {        
         
         String data = null;
+        boolean stop = false;
         try {
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(client.socket.getInputStream()));        
-            while ( (data = in.readLine()) != null && client.socket.isConnected() && client.socket.isBound()) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(client.socket.getInputStream()));
+            while ( (data = in.readLine()) != null && client.socket.isConnected() && client.socket.isBound() && !stop) {
             	String decryptedData = client.crypto.decryptHex(data);
-                datenVerarbeiten(decryptedData);
+            	if(decryptedData!=null) {
+                    datenVerarbeiten(decryptedData);
+            	}
+            	else {
+            		throw new Exception("decryptedData has error");
+            	}
             }
             System.out.println("\nconnection closed:" + client.socket.getInetAddress().getHostAddress());
         }
         catch(Exception e) {
         	System.out.println(e);
         }
+		try {
+			client.socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         fbSpieleServer.removeClient(client);
         //System.out.println("listening thread ended");
         
@@ -51,14 +64,14 @@ public class listeningThreadClass implements Runnable {
 				String antwort = msg.substring(schatzFrageAntwortPreText.length());
 				if(client.team==1) {
 					fbSpieleServer.schatzFrageAntwortTeam1 = Double.valueOf(msg.substring(schatzFrageAntwortPreText.length()));
-					presentation.team1SchatzungEingegeben = true;
-					presentation.geradeSchatzFragenAuflosung = false;
+					fbSpieleServer.presentation.team1SchatzungEingegeben = true;
+					fbSpieleServer.presentation.geradeSchatzFragenAuflosung = false;
 					fbSpieleServer.overViewPanelAnzeigen();
 				}
 				if(client.team==2) {
 					fbSpieleServer.schatzFrageAntwortTeam2 = Double.valueOf(msg.substring(schatzFrageAntwortPreText.length()));
-					presentation.team2SchatzungEingegeben = true;
-					presentation.geradeSchatzFragenAuflosung = false;
+					fbSpieleServer.presentation.team2SchatzungEingegeben = true;
+					fbSpieleServer.presentation.geradeSchatzFragenAuflosung = false;
 					fbSpieleServer.overViewPanelAnzeigen();
 				}
 				System.out.println("schätzfrageantwort von "+client.name+" (team "+ client.team + "): "+antwort);
@@ -80,6 +93,7 @@ public class listeningThreadClass implements Runnable {
 			double theta = Double.valueOf(strTheta);
 			
 			client.updateWhereIsWhatAnswer(phi, theta);
+			Presentation.woLiegtWasPresentation.updateTeamsPanel(true);
 		}
 		
 

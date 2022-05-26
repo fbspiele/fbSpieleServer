@@ -1,4 +1,4 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -19,9 +19,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
-import fbSpieleServer.clientacceptingthread;
+import FbSpieleServer.Clientacceptingthread;
 
-public class fbSpieleServer {
+public class FbSpieleServer {
 	static int port = 2079;
 
 	
@@ -59,7 +59,7 @@ public class fbSpieleServer {
     
     
     static int schatzFrageNahesteAntwortTeam = 0;
-    static presentation presentation;
+    static Presentation presentation;
     
     static int guessComparator = 1;
     
@@ -73,7 +73,7 @@ public class fbSpieleServer {
     static Settings settings;
     static Crypto settingsEncryptionCrypto;
     
-    fbSpieleServer(){    	
+    FbSpieleServer(){    	
     	
 
     	serverIp = getServerIp();
@@ -101,17 +101,17 @@ public class fbSpieleServer {
     	Settings.loadSettings();
         team1Name = settings.team1;
         team2Name = settings.team2;
-
-    	fbSpieleServer beerlyMpicsServer = new fbSpieleServer();
         
-        presentation = new presentation(settings);
+        FbSpieleServer fbSpieleServer = new FbSpieleServer();
+        
+        presentation = new Presentation(settings);
         
         Thread presentationThread = new Thread(presentation);
         presentationThread.setName("presentation thread");
         presentationThread.start();
         
         try {
-			beerlyMpicsServer.acceptNewClients();
+        	fbSpieleServer.acceptNewClients();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -148,7 +148,7 @@ public class fbSpieleServer {
     }
 
     public void acceptNewClients() throws Exception{
-    	new Thread(new clientacceptingthread(server, settings, settingsEncryptionCrypto)).start();
+    	new Thread(new Clientacceptingthread(this, server, settings, settingsEncryptionCrypto)).start();
     }
 
     public static BeerlyClient getFbSocketByClientIp(InetAddress ip) {
@@ -160,25 +160,40 @@ public class fbSpieleServer {
     	return null;
     }
     
-    public static void updateClientName(BeerlyClient client, String newName) {
-    	
-    }
     
     public static void addClient(BeerlyClient client) {
     	clientlist.add(client);
+    	System.out.println("client "+client.toString()+" added");
     	updateClientList();
     }
     
     public static void removeClient(BeerlyClient client) {
     	clientlist.remove(client);
+    	System.out.println("client "+client.toString()+" removed");
     	updateClientList();
     }
     
-    
+    static int columns = -1;
     public static void updateClientList(){
+    	SwingUtilities.invokeLater(new Runnable()
+    	{
+    	    @Override
+    	    public void run()
+    	    {
+    	    	updateClientListThreaded();    	    	
+    	    }
+    	});    	
+    }
+    
 
 
+    public static void updateClientListThreaded(){
 		BeerlyClient nullClient = new BeerlyClient(null, null);
+		
+
+		if(columns < 0) {
+			columns = nullClient.getTableHeadersArray().length;
+		}
 		
 		if(!tableModel.getDataVector().isEmpty()) {
 			tableModel.getDataVector().clear();
@@ -333,7 +348,7 @@ public class fbSpieleServer {
 				//System.out.println(nachstesSpielSoundButton.getText() + " clicked");
 
 				presentation.overViewPanelAnzeigen();
-				listeningThreadClass.playNextGameRevealSound();
+				ListeningThread.playNextGameRevealSound();
 				
 			}
 		});
@@ -638,7 +653,7 @@ public class fbSpieleServer {
     	buttonPlus1.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
 				//System.out.println(buttonPlus1.getText() + " clicked");
-    			werIstDasBildNummer++;	
+    			werIstDasBildNummer++;
     	    	bildNummerAnzeige.setText("next bild nr "+werIstDasBildNummer);		
     		}
     	});
@@ -769,6 +784,13 @@ public class fbSpieleServer {
 				+entrySendTextExtraStart+extraText+entrySendTextExtraEnd;
 	}
 	
+	static public void updateWoLiegtWasTeamPanels(boolean zensiert) {
+		System.out.println("updating both teams via FbSpieleServer");
+		Presentation.woLiegtWasPresentation.updateTeamsPanel(zensiert);
+	}
+	
+	
+	
 	static JPanel getWoliegtWasPanel() {
 		
 		
@@ -792,6 +814,18 @@ public class fbSpieleServer {
 			}});
     	
     	panel.add(fileButton);
+    	
+
+    	
+    	JButton initializeButton = new JButton();
+    	initializeButton.setText("initialize");
+    	initializeButton.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			presentation.woLiegtWasPresentationStarten();
+    			updateWoLiegtWasTeamPanels(true);
+			}});
+    	panel.add(initializeButton);
+    	
     	
     	JPanel fragenNavigationPanel = new JPanel();
     	fragenNavigationPanel.setLayout(new BoxLayout(fragenNavigationPanel, BoxLayout.X_AXIS));
@@ -837,10 +871,17 @@ public class fbSpieleServer {
     			for(BeerlyClient client : clientlist) {
     				client.resetWhereIsWhatAnswer();
     			}
-    			WoLiegtWasObject object = woliegtWasList.get(aktuelleWoLiegtWasFrage-1);
-    			woLiegtWasRichtigesPhi = object.phi;
-    			woLiegtWasRichtigesTheta = object.theta;
-    			updateClientList();
+    			if(woliegtWasList.size()>=aktuelleWoLiegtWasFrage-1 && aktuelleWoLiegtWasFrage-1>=0) {
+        			WoLiegtWasObject object = woliegtWasList.get(aktuelleWoLiegtWasFrage-1);
+        			woLiegtWasRichtigesPhi = object.phi;
+        			woLiegtWasRichtigesTheta = object.theta;
+        			updateClientList();
+        			updateWoLiegtWasTeamPanels(false);
+    			}
+    			else
+    			{
+    				System.out.println("error in startFrage.addActionListener(new ActionListener(){\n\tindex "+String.valueOf(aktuelleWoLiegtWasFrage-1)+" außerhalb der liste");
+    			}
     		}
     	});
     	
@@ -849,7 +890,6 @@ public class fbSpieleServer {
     	aufloesen.setText("auflösen");
     	aufloesen.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-    			
     			BeerlyClient closestClient = null;
     			for(BeerlyClient client:clientlist) {
     				if(closestClient==null) {
@@ -893,6 +933,14 @@ public class fbSpieleServer {
     			for(BeerlyClient client:clientlist) {
     				client.sendToSocket(totalSendText);
     			}
+    			
+    			if(presentation.getWoLiegtWasPresentation() != null) {
+    				String phiThetaString = woLiegtWasRichtigesPhi + "," + woLiegtWasRichtigesTheta;
+
+        			updateWoLiegtWasTeamPanels(false);
+    				presentation.getWoLiegtWasPresentation().auflosen(phiThetaString);
+    			}
+    			
     		}
     	});
     	

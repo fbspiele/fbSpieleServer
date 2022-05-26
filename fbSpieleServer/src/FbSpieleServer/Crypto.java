@@ -1,4 +1,4 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -137,15 +137,11 @@ public class Crypto {
 
         byte[] cipherTextMessage = new byte[bb.remaining()];
         bb.get(cipherTextMessage);
-        try {
-			return decryptWithoutIV(cipherTextMessage, iv);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return "";
-		}
+        return decryptWithoutIV(cipherTextMessage, iv);
     }
 
+
+    
     // decrypt using iv and password
     private String decryptWithoutIV(byte[] cText, byte[] iv) {
         Cipher cipher;
@@ -157,6 +153,7 @@ public class Crypto {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return null;
 		}
         return new String(plainText);
     }

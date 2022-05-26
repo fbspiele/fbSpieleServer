@@ -1,13 +1,13 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
 public class delayedAddPunkte implements Runnable {
 	Long time;
 	int team;
 	int punkte;
-	presentation presentation;
+	Presentation presentation;
 	boolean warSchonAufOverview = false;
 	
-	public delayedAddPunkte(presentation presentation, long waitTime, int team, int punkte) {
+	public delayedAddPunkte(Presentation presentation, long waitTime, int team, int punkte) {
 		time = waitTime;
 		this.team = team;
 		this.punkte = punkte;
@@ -16,7 +16,7 @@ public class delayedAddPunkte implements Runnable {
 	
 	public void run() {
 		if(presentation.lastPanelName!=null) {
-			if(presentation.lastPanelName.equals(fbSpieleServer.presentation.overviewPanelNameString)) {
+			if(presentation.lastPanelName.equals(FbSpieleServer.presentation.overviewPanelNameString)) {
 				warSchonAufOverview = true;
 			}
 		}

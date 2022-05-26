@@ -1,4 +1,4 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
 public class delayedExecuteCodeNumber implements Runnable {
 	Long waitTime;
@@ -16,6 +16,6 @@ public class delayedExecuteCodeNumber implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		fbSpieleServer.runCodeNumber(codeNumber);
+		FbSpieleServer.runCodeNumber(codeNumber);
 	}
 }

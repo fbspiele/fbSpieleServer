@@ -1,5 +1,6 @@
-package fbSpieleServer;
+package FbSpieleServer;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -8,13 +9,17 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.LayoutManager;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.swing.ImageIcon;
@@ -24,7 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class presentation implements Runnable {
+public class Presentation implements Runnable {
 	
 	final static String team1IconPath = "src/team1_500x500.png";
 	final static String team2IconPath = "src/team2_500x500.png";
@@ -33,6 +38,8 @@ public class presentation implements Runnable {
 	
 	final static String rightArrowPath = "src/schatzfragenpfeilrechts.png";
 	final static String leftArrowPath = "src/schatzfragenpfeillinks.png";
+	
+	
 	
 	//int frameWidth = 1920;
 	int frameWidth = 1920;
@@ -66,7 +73,7 @@ public class presentation implements Runnable {
 	ImageIcon team1Icon, team2Icon, alleTrinkenIcon, newRuleIcon;
 	
 	Settings settings;
-	public presentation(Settings settings) {
+	public Presentation(Settings settings) {
 		this.settings = settings;
 	}
 
@@ -226,15 +233,15 @@ public class presentation implements Runnable {
 	    	createTextField(panel,"schätztnfrage", (int)Math.round((defaultFrameWidth-5*teamPicturesWidth)/2.0),0 , 5*teamPicturesWidth, 300, 200);
 	    	if(geradeSchatzFragenAuflosung) {
 
-	    		createTextField(panel,fbSpieleServer.schatzFrageAntwortTeam1String, teamPicturesXpos - 100, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
+	    		createTextField(panel,FbSpieleServer.schatzFrageAntwortTeam1String, teamPicturesXpos - 100, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
 	    		putPictureInPanel(new ImageIcon(rightArrowPath), panel, teamPicturesXpos + (int) Math.round(3.0/4.0 * teamPicturesWidth) ,teamPicturesYpos + teamPicturesHeight ,2*newRuleSize,2*newRuleSize);
-	    		createTextField(panel,fbSpieleServer.schatzFrageAbstandTeam1String, teamPicturesXpos + (int) Math.round(1.0/2.0 * teamPicturesWidth) + 25 ,teamPicturesYpos + teamPicturesHeight-50, teamPicturesWidth, 300, 50);
+	    		createTextField(panel,FbSpieleServer.schatzFrageAbstandTeam1String, teamPicturesXpos + (int) Math.round(1.0/2.0 * teamPicturesWidth) + 25 ,teamPicturesYpos + teamPicturesHeight-50, teamPicturesWidth, 300, 50);
 	    		
-	    		createTextField(panel,fbSpieleServer.schatzFrageAntwortTeam2String, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 100, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
+	    		createTextField(panel,FbSpieleServer.schatzFrageAntwortTeam2String, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 100, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
 	    		putPictureInPanel(new ImageIcon(leftArrowPath), panel, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 200 - (int) Math.round(3.0/4.0 * teamPicturesWidth) ,teamPicturesYpos + teamPicturesHeight,2*newRuleSize,2*newRuleSize);
-	    		createTextField(panel,fbSpieleServer.schatzFrageAbstandTeam2String, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 200 - (int) Math.round(3.0/4.0 * teamPicturesWidth) -90 ,teamPicturesYpos + teamPicturesHeight-50, teamPicturesWidth, 300, 50);
+	    		createTextField(panel,FbSpieleServer.schatzFrageAbstandTeam2String, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 200 - (int) Math.round(3.0/4.0 * teamPicturesWidth) -90 ,teamPicturesYpos + teamPicturesHeight-50, teamPicturesWidth, 300, 50);
 	    		
-	    		createTextField(panel,fbSpieleServer.doubleToString(fbSpieleServer.schatzFrageRichtigeAntwort), (int)Math.round((defaultFrameWidth-teamPicturesWidth)/2.0), teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
+	    		createTextField(panel,FbSpieleServer.doubleToString(FbSpieleServer.schatzFrageRichtigeAntwort), (int)Math.round((defaultFrameWidth-teamPicturesWidth)/2.0), teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
 	    	}
 	    	else {
 	    		if(team1SchatzungEingegeben) {
@@ -395,14 +402,14 @@ public class presentation implements Runnable {
 			settings.saveIntSetting(settings.settingsKeyBisherMaxPunkteTeam2, maximalePunkteTeam2);
 		}
 		if(punkte > 0) {
-			listeningThreadClass.playCoinSound();
+			ListeningThread.playCoinSound();
 		}
 		if(punkte < 0) {
-			listeningThreadClass.playLostSomethingSound();
+			ListeningThread.playLostSomethingSound();
 		}
 	}
 	
-	JTextField createTextField(JPanel panel, String text, int posX, int posY, int width, int height, int fontSize) {
+	JTextField createTextField(JPanel panel, String text, int posX, int posY, int width, int height, int fontSize, Color textColor) {
 	    double frameScale = (double) frameWidth / (double) defaultFrameWidth;
 		Font font = new Font("SansSerif", Font.BOLD, (int) Math.round(fontSize * frameScale));
 	    JTextField textField = new JTextField();
@@ -412,8 +419,13 @@ public class presentation implements Runnable {
 	    textField.setFont(font);
 	    textField.setHorizontalAlignment(JTextField.CENTER);
 	    textField.setText(text);
+	    textField.setForeground(textColor);
 	    panel.add(textField);
-	    return textField;
+	    return textField;		
+	}
+	
+	JTextField createTextField(JPanel panel, String text, int posX, int posY, int width, int height, int fontSize) {
+		return createTextField(panel, text, posX, posY, width, height, fontSize, Color.decode("#000000"));
 	}
 	
 	JLabel putPictureInPanel(ImageIcon icon, JPanel panel, int posX, int posY, int width, int height) {
@@ -477,6 +489,215 @@ public class presentation implements Runnable {
 			scale = Math.max(wScale, hScale);
 		}
 		return scale;
+	}
+	
+	
+	public static TeamListPresentation woLiegtWasPresentation;
+	void woLiegtWasPresentationStarten() {
+		woLiegtWasPresentation = new TeamListPresentation("wo liegt was?");
+		displayPanelInFrame(woLiegtWasPresentation.getGesamtPanel());
+	}
+	
+	
+	class WoLiegtWasPresentation extends TeamListPresentation{
+		WoLiegtWasPresentation(String title){
+			super(title);
+		}
+	}
+	
+	
+	public TeamListPresentation getWoLiegtWasPresentation() {
+		if(woLiegtWasPresentation == null) {
+			return null;
+		}
+		else {
+			return woLiegtWasPresentation;
+		}
+	}
+	
+	class TeamListPresentation {
+		final static String schatzPresentationName = "schatzPresentationName"; 
+		String title;
+		
+		JPanel panelTeam1;
+		JPanel panelTeam2;
+		JPanel panelGes;
+		
+		JTextField losungsTextField;
+		
+		int titleWidth = defaultFrameWidth;
+
+	    int teamPicturesYpos = 100;
+	    int teamPicturesWidth = 200;
+	    int teamPicturesHeight = teamPicturesWidth;
+	    
+	    int teamListHeight = 800;
+		
+		List<Spieler> spielerListTeam1 = new ArrayList<>();
+		List<Spieler> spielerListTeam2 = new ArrayList<>();
+		
+		TeamListPresentation(String title){
+			this.title = title;
+			panelGes = new JPanel();
+			panelGes.setLayout(null);
+			panelGes.setName(schatzPresentationName);
+			JTextField titleText = new JTextField();
+			titleText.setText(title);
+			titleText.setBackground(new Color(0,0,0,0));
+			//panelGes.add(titleText);
+			createTextField(panelGes, title,(int) Math.round(defaultFrameWidth/2.0-titleWidth/2.0), 20, titleWidth, 200, 100);
+	    	putPictureInPanel(team1Icon, panelGes, (int) Math.round(1.0/4.0*defaultFrameWidth - teamPicturesWidth/2.0),teamPicturesYpos,teamPicturesWidth,teamPicturesHeight);
+	    	putPictureInPanel(team2Icon, panelGes, (int) Math.round(3.0/4.0*defaultFrameWidth - teamPicturesWidth/2.0),teamPicturesYpos,teamPicturesWidth,teamPicturesHeight);
+	    	losungsTextField = createTextField(panelGes, "", 0, defaultFrameHeight - 200, defaultFrameWidth, 200, 100);
+			panelTeam1 = new JPanel();
+			panelTeam2 = new JPanel();
+			panelTeam1.setLayout(null);
+			panelTeam2.setLayout(null);
+			panelGes.add(panelTeam1);
+			panelGes.add(panelTeam2);
+		}
+		
+		class Spieler{
+			InetAddress ip;
+			String name;
+			String schatzung = "";
+			String abstand = "";
+			Color color;
+			int team;
+			JTextField spielerSchatzungTextField;
+			JTextField spielerAbstandTextField;
+			Spieler(InetAddress ip, String name, int team, String schatzung, String color){
+				this.ip = ip;
+				this.name = name;
+				this.team = team;
+				this.schatzung = schatzung;
+				this.color = Color.decode(color);
+			}
+			public void updateSchatzung(String newSchatzung, String abstand){
+				schatzung = newSchatzung;
+				abstand = abstand;
+			}
+		}
+		
+		String getSpielerAntwort(BeerlyClient client, boolean zensiert) {
+			// to be overwritten
+			if(zensiert) {
+				if(client.whereIsWhatAnswerPhi == null || client.whereIsWhatAnswerTheta == null) {
+					return "";
+				}
+				else {
+					return "*";
+				}
+			}
+			else {
+				if(client.whereIsWhatAnswerPhi == null || client.whereIsWhatAnswerTheta == null) {
+					return "";
+				}
+				else {
+					return client.whereIsWhatAnswerPhi.toString()+","+client.whereIsWhatAnswerTheta.toString();	
+				}			
+			}
+		}
+
+		String getSpielerAbstand(BeerlyClient client, boolean zensiert) {
+			// to be overwritten
+			if(zensiert) {
+				if(client.whereIsWhatAnswerDistance == null) {
+					return "";
+				}
+				else {
+					return "*";
+				}
+			}
+			else {
+				if(client.whereIsWhatAnswerDistance == null) {
+					return "";
+				}
+				else {
+					return client.whereIsWhatAnswerDistance.toString();	
+				}			
+			}
+		}
+		
+		void updateTeamsPanel(boolean zensiert) {
+			if(panelGes==null) {
+				return;
+			}
+			panelGes.removeAll();
+
+			
+			
+			List<BeerlyClient> spielerListTeam1 = new ArrayList<>();
+			List<BeerlyClient> spielerListTeam2 = new ArrayList<>();
+
+			
+			int xPosSpielerNamesTeam1 = (int) Math.round(0.0/9.0*defaultFrameWidth);
+			int xPosSchatzTeam1 = (int) Math.round(1.0/9.0*defaultFrameWidth);
+			int xPosAbstandTeam1 = (int) Math.round(2.0/9.0*defaultFrameWidth);
+			
+			int xPosSpielerNamesTeam2 = (int) Math.round(8.0/9.0*defaultFrameWidth);
+			int xPosSchatzTeam2 = (int) Math.round(7.0/9.0*defaultFrameWidth);
+			int xPosAbstandTeam2 = (int) Math.round(6.0/9.0*defaultFrameWidth);
+			
+			int yPosTeams = 400;
+			int textFieldWidths = (int) Math.round(1.0/9.0*defaultFrameWidth);
+			
+
+			for(BeerlyClient client : FbSpieleServer.clientlist) {
+				if(client.team == 1) {
+					spielerListTeam1.add(client);
+				}
+				else if (client.team == 2) {
+						spielerListTeam2.add(client);
+				}
+			}
+			
+			int listSize = Math.max(spielerListTeam1.size(), spielerListTeam2.size());
+			
+			int entryHeight = 100;
+			if(listSize != 0) {
+				entryHeight = Math.round((defaultFrameHeight - yPosTeams)/listSize);
+			}
+			
+			if(entryHeight > 100) {
+				entryHeight = 100;
+			}
+			
+			int textSize = (int) Math.round(entryHeight/4.0);
+
+			BeerlyClient spieler;
+			
+			for (int i = 0; i<spielerListTeam1.size(); i++) {
+				spieler = spielerListTeam1.get(i);
+				Color color = Color.decode(spieler.color);
+				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam1, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam1, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam1, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+			}
+
+			
+			for (int i = 0; i<spielerListTeam2.size(); i++) {
+				spieler = spielerListTeam2.get(i);
+				Color color = Color.decode(spieler.color);
+				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam2, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam2, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam2, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+			}
+			
+			frame.revalidate();
+			frame.repaint();
+		
+			
+		}
+		
+		void auflosen(String losung) {
+			losungsTextField.setText(losung);
+		}
+		
+		JPanel getGesamtPanel() {
+			return panelGes;
+		}
+		
 	}
     
 }
