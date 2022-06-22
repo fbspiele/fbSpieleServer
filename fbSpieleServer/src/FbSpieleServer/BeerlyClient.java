@@ -19,6 +19,8 @@ public class BeerlyClient {
 	Double rightWhereIsWhatAnswerPhi;
 	Double rightWhereIsWhatAnswerTheta;
 	
+	int abstandPosition = -1;
+	
 	Crypto crypto;
 
 	BeerlyClient(){
@@ -64,6 +66,8 @@ public class BeerlyClient {
 		whereIsWhatAnswerDistance = null;
 		rightWhereIsWhatAnswerPhi = null;
 		rightWhereIsWhatAnswerTheta = null;
+		abstandPosition = -1;
+		sendToSocket(FbSpieleServer.woLiegtWasReset);
 		FbSpieleServer.updateClientList();
 	}
 	

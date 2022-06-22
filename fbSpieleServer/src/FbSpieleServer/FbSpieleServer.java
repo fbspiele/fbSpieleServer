@@ -738,7 +738,7 @@ public class FbSpieleServer {
 		aktuelleWoLiegtWasFrage = newNumber;
     	frageNummerText.setText("frage nr "+aktuelleWoLiegtWasFrage);
     	System.out.println(woliegtWasList.size());
-    	if(woliegtWasList.size()>0&& woliegtWasList.size()>=aktuelleWoLiegtWasFrage-1) {
+    	if(woliegtWasList.size()>0&& woliegtWasList.size()>aktuelleWoLiegtWasFrage-1) {
         	if(woliegtWasList.get(aktuelleWoLiegtWasFrage-1)!=null) {
         		if(keyText!=null) {
         			keyText.setText(woliegtWasList.get(aktuelleWoLiegtWasFrage-1).name);
@@ -752,13 +752,15 @@ public class FbSpieleServer {
     	}
     	else {
     		if(keyText!=null) {
-            	keyText.setText("nächste frage text b");
+            	keyText.setText("KEINE FRAGEN MEHR IN DEM FILE");
     		}
     	}
 	}
 	
 	final static String woLiegtWasAuflosungStart = "woLiegtWasAuflosungStart";
 	final static String woLiegtWasAuflosungEnd = "woLiegtWasAuflosungEnd";
+
+	final static String woLiegtWasReset = "woLiegtWasReset";
 	
 
 	final static String entrySendTextGenerelSplitter = "entrySendTextGenerelSplitter";
@@ -777,6 +779,8 @@ public class FbSpieleServer {
 
 	final static String closestGuessSendText = "closestGuessSendText";
 	
+
+	
 	final static String getWoLiegtWasEntrySendText(Double phi, Double theta, String color, String extraText) {
 		return entrySendTextPhiStart+String.valueOf(phi)+entrySendTextPhiEnd
 				+entrySendTextThetaStart+String.valueOf(theta)+entrySendTextThetaEnd
@@ -785,7 +789,7 @@ public class FbSpieleServer {
 	}
 	
 	static public void updateWoLiegtWasTeamPanels(boolean zensiert) {
-		System.out.println("updating both teams via FbSpieleServer");
+		//System.out.println("updating both teams via FbSpieleServer");
 		Presentation.woLiegtWasPresentation.updateTeamsPanel(zensiert);
 	}
 	
@@ -940,7 +944,8 @@ public class FbSpieleServer {
         			updateWoLiegtWasTeamPanels(false);
     				presentation.getWoLiegtWasPresentation().auflosen(phiThetaString);
     			}
-    			
+
+    			updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage + 1);
     		}
     	});
     	

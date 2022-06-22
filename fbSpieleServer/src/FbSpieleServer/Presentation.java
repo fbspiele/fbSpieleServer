@@ -18,7 +18,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.processing.RoundEnvironment;
@@ -594,10 +596,12 @@ public class Presentation implements Runnable {
 					return "";
 				}
 				else {
-					return client.whereIsWhatAnswerPhi.toString()+","+client.whereIsWhatAnswerTheta.toString();	
+					DecimalFormat outputFormat = new DecimalFormat("#.####");
+					return outputFormat.format(client.whereIsWhatAnswerPhi)+","+outputFormat.format(client.whereIsWhatAnswerTheta);	
 				}			
 			}
 		}
+		 
 
 		String getSpielerAbstand(BeerlyClient client, boolean zensiert) {
 			// to be overwritten
@@ -614,10 +618,33 @@ public class Presentation implements Runnable {
 					return "";
 				}
 				else {
-					return client.whereIsWhatAnswerDistance.toString();	
+					DecimalFormat outputFormat = new DecimalFormat("#.####");
+					return outputFormat.format(client.whereIsWhatAnswerDistance);	
 				}			
 			}
 		}
+
+
+		String getSpielerAbstandNumber(BeerlyClient client, boolean zensiert) {
+			// to be overwritten
+			if(zensiert) {
+				if(client.abstandPosition == -1) {
+					return "";
+				}
+				else {
+					return "*";
+				}
+			}
+			else {
+				if(client.abstandPosition == -1) {
+					return "";
+				}
+				else {
+					return String.valueOf(client.abstandPosition);
+				}			
+			}
+		}
+		
 		
 		void updateTeamsPanel(boolean zensiert) {
 			if(panelGes==null) {
@@ -630,25 +657,51 @@ public class Presentation implements Runnable {
 			List<BeerlyClient> spielerListTeam1 = new ArrayList<>();
 			List<BeerlyClient> spielerListTeam2 = new ArrayList<>();
 
+			int textFieldWidthsName = (int) Math.round(0.5/9.0*defaultFrameWidth);
+			int textFieldWidthsAnswer = (int) Math.round(1.25/9.0*defaultFrameWidth);
 			
 			int xPosSpielerNamesTeam1 = (int) Math.round(0.0/9.0*defaultFrameWidth);
-			int xPosSchatzTeam1 = (int) Math.round(1.0/9.0*defaultFrameWidth);
-			int xPosAbstandTeam1 = (int) Math.round(2.0/9.0*defaultFrameWidth);
+			int xPosSchatzTeam1 = xPosSpielerNamesTeam1+textFieldWidthsName;
+			int xPosAbstandTeam1 = xPosSchatzTeam1+textFieldWidthsAnswer;
+
+			int xPosSpielerNamesTeam2 = (int) Math.round(8.5/9.0*defaultFrameWidth);
+			int xPosSchatzTeam2 = xPosSpielerNamesTeam2-textFieldWidthsAnswer;
+			int xPosAbstandTeam2 = xPosSchatzTeam2-textFieldWidthsAnswer;
 			
-			int xPosSpielerNamesTeam2 = (int) Math.round(8.0/9.0*defaultFrameWidth);
-			int xPosSchatzTeam2 = (int) Math.round(7.0/9.0*defaultFrameWidth);
-			int xPosAbstandTeam2 = (int) Math.round(6.0/9.0*defaultFrameWidth);
+			int positionWidth = (int) Math.round(0.1/9.0*defaultFrameWidth);
+			
+			int xPosNummerTeam1 = xPosAbstandTeam1+textFieldWidthsAnswer;
+			int xPosNummerTeam2 = xPosAbstandTeam2-positionWidth;
 			
 			int yPosTeams = 400;
-			int textFieldWidths = (int) Math.round(1.0/9.0*defaultFrameWidth);
 			
+			if(!zensiert) {
+			    for(BeerlyClient clientListClient : FbSpieleServer.clientlist) {
+			    	if(clientListClient.whereIsWhatAnswerDistance!=null) {
+				    	int clientListClientNumber = 1;
+				    	for(BeerlyClient client : FbSpieleServer.clientlist) {
+					    	if(clientListClient.whereIsWhatAnswerDistance!=null) {
+						    	if(client.whereIsWhatAnswerDistance<clientListClient.whereIsWhatAnswerDistance) {
+						    		clientListClientNumber++;
+						    	}
+					    	}
+					    }
+				    	clientListClient.abstandPosition = clientListClientNumber;			    		
+			    	}
+			    }
+			    FbSpieleServer.clientlist.sort(new Comparator<BeerlyClient>() {
+			    	public int compare(BeerlyClient one, BeerlyClient two) {
+			    		return Integer.compare(one.abstandPosition, two.abstandPosition);
+			    	}
+			    });
+			}
 
 			for(BeerlyClient client : FbSpieleServer.clientlist) {
 				if(client.team == 1) {
 					spielerListTeam1.add(client);
 				}
 				else if (client.team == 2) {
-						spielerListTeam2.add(client);
+					spielerListTeam2.add(client);
 				}
 			}
 			
@@ -656,32 +709,34 @@ public class Presentation implements Runnable {
 			
 			int entryHeight = 100;
 			if(listSize != 0) {
-				entryHeight = Math.round((defaultFrameHeight - yPosTeams)/listSize);
+				entryHeight = Math.round((defaultFrameHeight - yPosTeams)/(listSize+1));
 			}
 			
-			if(entryHeight > 100) {
-				entryHeight = 100;
+			if(entryHeight > 50) {
+				entryHeight = 50;
 			}
 			
-			int textSize = (int) Math.round(entryHeight/4.0);
+			int textSize = (int) Math.round(entryHeight/2.0);
 
 			BeerlyClient spieler;
 			
 			for (int i = 0; i<spielerListTeam1.size(); i++) {
 				spieler = spielerListTeam1.get(i);
 				Color color = Color.decode(spieler.color);
-				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam1, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam1, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam1, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam1, yPosTeams+i*entryHeight, textFieldWidthsName, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam1, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam1, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAbstandNumber(spieler, zensiert), xPosNummerTeam1, yPosTeams+i*entryHeight, positionWidth, entryHeight, textSize, color);
 			}
 
 			
 			for (int i = 0; i<spielerListTeam2.size(); i++) {
 				spieler = spielerListTeam2.get(i);
 				Color color = Color.decode(spieler.color);
-				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam2, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam2, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam2, yPosTeams+i*entryHeight, textFieldWidths, entryHeight, textSize, color);
+				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam2, yPosTeams+i*entryHeight, textFieldWidthsName, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam2, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam2, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelGes, getSpielerAbstandNumber(spieler, zensiert), xPosNummerTeam2, yPosTeams+i*entryHeight, positionWidth, entryHeight, textSize, color);
 			}
 			
 			frame.revalidate();
