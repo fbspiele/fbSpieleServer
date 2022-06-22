@@ -24,6 +24,9 @@ import FbSpieleServer.Clientacceptingthread;
 public class FbSpieleServer {
 	static int port = 2079;
 
+
+	final static String woLiegtWasSubfolder = "woLiegtWas";
+	final static String schatztnSubfolder = "schatztn";
 	
 	static String team1Name = "team1";
 	static String team2Name = "team2";
@@ -32,6 +35,7 @@ public class FbSpieleServer {
 	static ServerSocket server = null;
     public static volatile List<BeerlyClient> clientlist;
     public static volatile List<WoLiegtWasObject> woliegtWasList = new ArrayList<>();
+    public static volatile List<SchatztnObject> schatztnFrageList= new ArrayList<>();
     static JPanel panel;
     static DefaultTableModel tableModel;
     static JTable jTable;
@@ -56,6 +60,9 @@ public class FbSpieleServer {
     static Double woLiegtWasRichtigesPhi;
     static Double woLiegtWasRichtigesTheta;
     static int aktuelleWoLiegtWasFrage = -1;
+    
+    static Double schatztnRichtigeValue;
+    static int aktuelleSchatztnFrage = -1;
     
     
     static int schatzFrageNahesteAntwortTeam = 0;
@@ -285,6 +292,7 @@ public class FbSpieleServer {
         panelOben.add(getWerIstDasPanel());
         //panelOben.add(getSchatzFragePanel());
         panelOben.add(getWoliegtWasPanel());
+        panelOben.add(getSchatztnPanel());
         
         
         panelOben.add(b1);
@@ -693,12 +701,11 @@ public class FbSpieleServer {
 		return panel;
 	}
 	
-	
 	static int upateWoLiegtWasFragen(String filename) {
 
 		
 		
-    	Path path = Path.of("woLiegtWas",filename);
+    	Path path = Path.of(woLiegtWasSubfolder,filename);
     	String fileContent;
 		try {
 			 fileContent = new String(Files.readString(path));
@@ -727,32 +734,32 @@ public class FbSpieleServer {
     		}
     	}
 
-		updateAktuelleFrageNummer(1);
+		updateAktuelleWoLiegtWasFrageNummer(1);
     	return counter;
 		
 	}
-	static JTextField frageNummerText, keyText;
+	static JTextField woLiegtWasFrageNummerText, woLiegtWasKeyText;
 	
 	
-	static void updateAktuelleFrageNummer(int newNumber) {
+	static void updateAktuelleWoLiegtWasFrageNummer(int newNumber) {
 		aktuelleWoLiegtWasFrage = newNumber;
-    	frageNummerText.setText("frage nr "+aktuelleWoLiegtWasFrage);
+    	woLiegtWasFrageNummerText.setText("frage nr "+aktuelleWoLiegtWasFrage);
     	System.out.println(woliegtWasList.size());
     	if(woliegtWasList.size()>0&& woliegtWasList.size()>aktuelleWoLiegtWasFrage-1) {
         	if(woliegtWasList.get(aktuelleWoLiegtWasFrage-1)!=null) {
-        		if(keyText!=null) {
-        			keyText.setText(woliegtWasList.get(aktuelleWoLiegtWasFrage-1).name);
+        		if(woLiegtWasKeyText!=null) {
+        			woLiegtWasKeyText.setText(woliegtWasList.get(aktuelleWoLiegtWasFrage-1).name);
         		}
         	}
         	else {
-        		if(keyText!=null) {
-                	keyText.setText("nächste frage text a");
+        		if(woLiegtWasKeyText!=null) {
+        			woLiegtWasKeyText.setText("nächste frage text a");
         		}
         	}
     	}
     	else {
-    		if(keyText!=null) {
-            	keyText.setText("KEINE FRAGEN MEHR IN DEM FILE");
+    		if(woLiegtWasKeyText!=null) {
+    			woLiegtWasKeyText.setText("KEINE FRAGEN MEHR IN DEM FILE");
     		}
     	}
 	}
@@ -779,6 +786,8 @@ public class FbSpieleServer {
 
 	final static String closestGuessSendText = "closestGuessSendText";
 	
+	
+	
 
 	
 	final static String getWoLiegtWasEntrySendText(Double phi, Double theta, String color, String extraText) {
@@ -793,8 +802,7 @@ public class FbSpieleServer {
 		Presentation.woLiegtWasPresentation.updateTeamsPanel(zensiert);
 	}
 	
-	
-	
+    
 	static JPanel getWoliegtWasPanel() {
 		
 		
@@ -836,9 +844,9 @@ public class FbSpieleServer {
 
     	
 
-    	frageNummerText = new JTextField();
-    	frageNummerText.setHorizontalAlignment(JTextField.CENTER);
-		updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage);
+    	woLiegtWasFrageNummerText = new JTextField();
+    	woLiegtWasFrageNummerText.setHorizontalAlignment(JTextField.CENTER);
+		updateAktuelleWoLiegtWasFrageNummer(aktuelleWoLiegtWasFrage);
     	
     	
     	
@@ -846,7 +854,7 @@ public class FbSpieleServer {
     	frageNummerMinus.setText("-1");
     	frageNummerMinus.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-    			updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage - 1);
+    			updateAktuelleWoLiegtWasFrageNummer(aktuelleWoLiegtWasFrage - 1);
 			}});
 
 
@@ -855,18 +863,18 @@ public class FbSpieleServer {
     	frageNummerPlus.setText("+1");
     	frageNummerPlus.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-    			updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage + 1);
+    			updateAktuelleWoLiegtWasFrageNummer(aktuelleWoLiegtWasFrage + 1);
 			}});
     	fragenNavigationPanel.add(frageNummerMinus);
-    	fragenNavigationPanel.add(frageNummerText);
+    	fragenNavigationPanel.add(woLiegtWasFrageNummerText);
     	fragenNavigationPanel.add(frageNummerPlus);
 
     	panel.add(fragenNavigationPanel);
     	
 
-    	keyText = new JTextField();
-    	keyText.setText("nächste frage key");
-    	keyText.setHorizontalAlignment(JTextField.CENTER);
+    	woLiegtWasKeyText = new JTextField();
+    	woLiegtWasKeyText.setText("nächste frage key");
+    	woLiegtWasKeyText.setHorizontalAlignment(JTextField.CENTER);
 
     	JButton startFrage = new JButton();
     	startFrage.setText("start diese frage (reset)");
@@ -945,129 +953,224 @@ public class FbSpieleServer {
     				presentation.getWoLiegtWasPresentation().auflosen(phiThetaString);
     			}
 
-    			updateAktuelleFrageNummer(aktuelleWoLiegtWasFrage + 1);
+    			updateAktuelleWoLiegtWasFrageNummer(aktuelleWoLiegtWasFrage + 1);
     		}
     	});
     	
 
-    	panel.add(keyText);
+    	panel.add(woLiegtWasKeyText);
+    	panel.add(startFrage);
+    	panel.add(aufloesen);
+    	
+    	
+    	return panel;
+		
+	}
+	
+	
+	
+
+	
+	static int upateSchatztnFragen(String filename) {
+
+    	Path path = Path.of(schatztnSubfolder, filename);
+    	String fileContent;
+		try {
+			 fileContent = new String(Files.readString(path));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return -1;
+		}
+		
+		System.out.println(fileContent);
+		schatztnFrageList = new ArrayList<>();
+		int counter = 0;
+		
+    	String[] lines = fileContent.split("\n");
+    	for (int i = 1; i< lines.length; i++) {
+    		System.out.println(lines[i]);
+    		
+    		if(lines[i-1].length()!=0 && lines[i].length()!=0) {
+    			Double value = null;
+    			boolean lineDouble = true;
+    			try {
+        			String line = lines[i].replace(",", ".");
+        			value = Double.valueOf(line);
+    			}
+    			catch (Exception e) {
+    				e.printStackTrace();
+    				lineDouble = false;
+    			}
+    			if(lineDouble) {
+        			counter++;
+        			SchatztnObject object = new SchatztnObject();
+        			object.name = lines[i-1];
+        			object.value = value;
+        			schatztnFrageList.add(object);
+    			}
+    		}
+    	}
+
+		updateAktuelleSchatztnFrageNummer(1);
+    	return counter;
+		
+	}
+
+	static JTextField schatztnFrageNummerText, schatztnKeyText;
+	
+	static void updateAktuelleSchatztnFrageNummer(int newNumber) {
+		aktuelleSchatztnFrage = newNumber;
+		schatztnFrageNummerText.setText("frage nr "+aktuelleSchatztnFrage);
+    	System.out.println(woliegtWasList.size());
+    	if(schatztnFrageList.size()>0&& schatztnFrageList.size()>aktuelleSchatztnFrage-1) {
+        	if(schatztnFrageList.get(aktuelleSchatztnFrage-1)!=null) {
+        		if(schatztnKeyText!=null) {
+        			schatztnKeyText.setText(schatztnFrageList.get(aktuelleSchatztnFrage-1).name);
+        		}
+        	}
+        	else {
+        		if(schatztnKeyText!=null) {
+        			schatztnKeyText.setText("nächste frage text a");
+        		}
+        	}
+    	}
+    	else {
+    		if(schatztnKeyText!=null) {
+    			schatztnKeyText.setText("KEINE FRAGEN MEHR IN DEM FILE");
+    		}
+    	}
+	}
+	
+
+    final static String schatztn_sendTextStart = "schatztn_sendTextStart";
+    final static String schatztn_sendTextEnd = "schatztn_sendTextEnd";
+    final static String schatztn_sendReset = "schatztn_sendReset";
+
+    
+	static JPanel getSchatztnPanel() {
+		
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));	
+
+    	
+    	JTextField titleText = new JTextField();
+    	titleText.setText("schätztn?");
+    	titleText.setHorizontalAlignment(JTextField.CENTER);
+
+    	
+    	panel.add(titleText);
+
+    	
+    	JButton fileButton = new JButton();
+    	fileButton.setText("file?");
+    	fileButton.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+		        String filename = JOptionPane.showInputDialog(null, "file name?");
+		        int fragenAnzahl = upateSchatztnFragen(filename);
+		        fileButton.setText("file = "+filename+" ("+fragenAnzahl+" Fragen)");
+			}});
+    	
+    	panel.add(fileButton);
+    	
+
+    	JButton initializeButton = new JButton();
+    	initializeButton.setText("initialize");
+    	initializeButton.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			presentation.woSchatztnStarten();
+    			updateSchatztnTeamPanels(true);
+			}});
+    	panel.add(initializeButton);
+    	
+    	
+    	JPanel fragenNavigationPanel = new JPanel();
+    	fragenNavigationPanel.setLayout(new BoxLayout(fragenNavigationPanel, BoxLayout.X_AXIS));
+
+    	
+
+    	schatztnFrageNummerText = new JTextField();
+    	schatztnFrageNummerText.setHorizontalAlignment(JTextField.CENTER);
+		updateAktuelleSchatztnFrageNummer(aktuelleSchatztnFrage);
+    	
+    	
+    	
+    	JButton frageNummerMinus = new JButton();
+    	frageNummerMinus.setText("-1");
+    	frageNummerMinus.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			updateAktuelleSchatztnFrageNummer(aktuelleSchatztnFrage - 1);
+			}});
+
+
+    	
+    	JButton frageNummerPlus = new JButton();
+    	frageNummerPlus.setText("+1");
+    	frageNummerPlus.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			updateAktuelleSchatztnFrageNummer(aktuelleSchatztnFrage + 1);
+			}});
+    	fragenNavigationPanel.add(frageNummerMinus);
+    	fragenNavigationPanel.add(schatztnFrageNummerText);
+    	fragenNavigationPanel.add(frageNummerPlus);
+
+    	panel.add(fragenNavigationPanel);
+    	
+
+    	schatztnKeyText = new JTextField();
+    	schatztnKeyText.setText("nächste frage key");
+    	schatztnKeyText.setHorizontalAlignment(JTextField.CENTER);
+
+    	
+    	JButton startFrage = new JButton();
+    	startFrage.setText("start diese frage (reset)");
+    	startFrage.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			for(BeerlyClient client : clientlist) {
+    				client.resetSchatztnAnswer();
+    			}
+    			if(schatztnFrageList.size()>=aktuelleSchatztnFrage-1 && aktuelleSchatztnFrage-1>=0) {
+        			SchatztnObject object = schatztnFrageList.get(aktuelleSchatztnFrage-1);
+        			schatztnRichtigeValue = object.value;
+        			updateClientList();
+        			updateSchatztnTeamPanels(false);
+    			}
+    			else
+    			{
+    				System.out.println("error in startFrage.addActionListener(new ActionListener(){\n\tindex "+String.valueOf(aktuelleSchatztnFrage)+" außerhalb der liste");
+    			}
+    		}
+    	});
+    	
+
+    	JButton aufloesen = new JButton();
+    	aufloesen.setText("auflösen");
+    	aufloesen.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			
+    			if(presentation.getSchatztnPresentation() != null) {
+        			updateSchatztnTeamPanels(false);
+        			if(schatztnRichtigeValue!=null) {
+        				presentation.getSchatztnPresentation().auflosen(String.valueOf(schatztnRichtigeValue));
+        			}
+    			}
+
+    			updateAktuelleSchatztnFrageNummer(aktuelleWoLiegtWasFrage + 1);
+    		}
+    	});
+    	
+
+    	panel.add(schatztnKeyText);
     	panel.add(startFrage);
     	panel.add(aufloesen);
     	
     	
     	
-    	
-    	
-
-    	/*JButton schatzFrageStarten = new JButton();
-    	schatzFrageStarten.setText("starten/beenden");
-    	schatzFrageStarten.addActionListener(new ActionListener(){
-    		public void actionPerformed(ActionEvent arg0) {
-				//System.out.println(buttonWerIstDasStarten.getText() + " clicked");
-    			
-    			presentation.geradeSchatzFragen = !presentation.geradeSchatzFragen;
-    			presentation.overViewPanelAnzeigen();
-    		}
-    	});
-    	
-    	panel.add(schatzFrageStarten);
-    	*/
-    	JButton richtigeWoAntwort = new JButton();
-    	richtigeWoAntwort.setText("antwort?");
-    	richtigeWoAntwort.addActionListener(new ActionListener(){
-    		public void actionPerformed(ActionEvent arg0) {
-				//System.out.println(buttonWerIstDasStarten.getText() + " clicked");
-
-    			
-    			
-				presentation.geradeSchatzFragenAuflosung = false;
-    	        String inputString = JOptionPane.showInputDialog(null, "richtige antwort?");
-    	        schatzFrageRichtigeAntwort = Double.parseDouble(inputString);
-    	        
-    	        updateClientList();
-    	        
-    	        richtigeWoAntwort.setText("antwort = "+schatzFrageRichtigeAntwort);
-
-    	        presentation.spielLeitungSchatzungEingegeben = true;
-    	        presentation.overViewPanelAnzeigen();
-			
-				//listeningThreadClass.executeMacro("schatzFrageRichtigeAntwort("+schatzFrageRichtigeAntwort+")");
-    		}
-    	});
-    	
-    	
-    	/*
-    	panel.add(richtigeAntwort);
-    	
-
-    	JButton auflosung = new JButton();
-    	auflosung.setText("auflosung");
-    	auflosung.addActionListener(new ActionListener(){
-    		public void actionPerformed(ActionEvent arg0) {
-				//System.out.println(auflosung.getText() + " clicked");
-
-    			presentation.geradeSchatzFragenAuflosung = true;
-    			
-    			
-    			
-    			if (schatzFrageAntwortTeam1 < schatzFrageRichtigeAntwort) {
-    				schatzFrageAbstandTeam1 = schatzFrageRichtigeAntwort / schatzFrageAntwortTeam1;
-    				schatzFrageAbstandTeam1String = "*"; 
-    			}
-    			else {
-    				schatzFrageAbstandTeam1 = schatzFrageAntwortTeam1 / schatzFrageRichtigeAntwort;
-    				schatzFrageAbstandTeam1String = "/"; 
-    			}
-    			if (schatzFrageAntwortTeam2 < schatzFrageRichtigeAntwort) {
-    				schatzFrageAbstandTeam2 = schatzFrageRichtigeAntwort / schatzFrageAntwortTeam2; 
-    				schatzFrageAbstandTeam2String = "*"; 
-    			}
-    			else {
-    				schatzFrageAbstandTeam2 = schatzFrageAntwortTeam2 / schatzFrageRichtigeAntwort;
-    				schatzFrageAbstandTeam2String = "/";
-    			}
-    			
-    			
-    			//richtiges Team rausfinden
-    			if(schatzFrageAbstandTeam1 < schatzFrageAbstandTeam2) {
-    				schatzFrageNahesteAntwortTeam = 1;
-    			}
-    			else if(schatzFrageAbstandTeam1 > schatzFrageAbstandTeam2) {
-    				schatzFrageNahesteAntwortTeam = 2;
-    			}
-    			else {
-    				schatzFrageNahesteAntwortTeam = 0;
-    			}
-    			
-    			System.out.println("schatz näheres team: " + schatzFrageNahesteAntwortTeam);
-    			
-    			System.out.println("\nschätzfrage\n richtigeantwort: " +schatzFrageRichtigeAntwort+ "\n team 1 mit " +schatzFrageAntwortTeam1 + " um " + schatzFrageAbstandTeam1String + schatzFrageAbstandTeam1  + " daneben\n team 2 mit " +schatzFrageAntwortTeam2 + " um " + schatzFrageAbstandTeam2String + schatzFrageAbstandTeam2 +" daneben");
-    			
-    			schatzFrageAbstandTeam1String = schatzFrageAbstandTeam1String+doubleToString(schatzFrageAbstandTeam1);
-    			schatzFrageAbstandTeam2String = schatzFrageAbstandTeam2String+doubleToString(schatzFrageAbstandTeam2);
-    			
-    			schatzFrageAntwortTeam1String = doubleToString(schatzFrageAntwortTeam1);
-    			schatzFrageAntwortTeam2String = doubleToString(schatzFrageAntwortTeam2);
-    			
-    			
-
-
-    			
-    			presentation.overViewPanelAnzeigen();
-    			presentation.team1SchatzungEingegeben = false;
-    			presentation.team2SchatzungEingegeben = false;
-    			presentation.spielLeitungSchatzungEingegeben = false;
-			
-				//listeningThreadClass.executeMacro("schatzFrageAuflosen()");
-    		}
-    	});
-
-    	
-    	panel.add(auflosung);		
-    	*/
     	return panel;
-		
 	}
+    	
+    
 	public static String doubleToString(double number) {
 		int cutoffPower = 5;
 		if(Math.abs(number)>=Math.pow(10, cutoffPower)||Math.abs(number)<=Math.pow(10, -cutoffPower)) {

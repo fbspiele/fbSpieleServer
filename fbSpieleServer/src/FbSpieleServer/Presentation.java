@@ -69,8 +69,6 @@ public class Presentation implements Runnable {
 	static boolean team1SchatzungEingegeben = false;
 	static boolean team2SchatzungEingegeben = false;
 	boolean spielLeitungSchatzungEingegeben = false;
-	static boolean geradeSchatzFragenAuflosung = false;
-	
 	
 	ImageIcon team1Icon, team2Icon, alleTrinkenIcon, newRuleIcon;
 	
@@ -228,37 +226,6 @@ public class Presentation implements Runnable {
 
 	    createTextField(panel,String.valueOf(settings.getIntSetting(settings.settingsKeyPunkteTeam2)), defaultFrameWidth-teamPicturesXpos-teamPicturesWidth, teamPicturesYpos + teamPicturesHeight-125, teamPicturesWidth, 300, 100);
 	    
-	    
-
-	    
-	    if(geradeSchatzFragen) {
-	    	createTextField(panel,"schätztnfrage", (int)Math.round((defaultFrameWidth-5*teamPicturesWidth)/2.0),0 , 5*teamPicturesWidth, 300, 200);
-	    	if(geradeSchatzFragenAuflosung) {
-
-	    		createTextField(panel,FbSpieleServer.schatzFrageAntwortTeam1String, teamPicturesXpos - 100, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
-	    		putPictureInPanel(new ImageIcon(rightArrowPath), panel, teamPicturesXpos + (int) Math.round(3.0/4.0 * teamPicturesWidth) ,teamPicturesYpos + teamPicturesHeight ,2*newRuleSize,2*newRuleSize);
-	    		createTextField(panel,FbSpieleServer.schatzFrageAbstandTeam1String, teamPicturesXpos + (int) Math.round(1.0/2.0 * teamPicturesWidth) + 25 ,teamPicturesYpos + teamPicturesHeight-50, teamPicturesWidth, 300, 50);
-	    		
-	    		createTextField(panel,FbSpieleServer.schatzFrageAntwortTeam2String, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 100, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
-	    		putPictureInPanel(new ImageIcon(leftArrowPath), panel, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 200 - (int) Math.round(3.0/4.0 * teamPicturesWidth) ,teamPicturesYpos + teamPicturesHeight,2*newRuleSize,2*newRuleSize);
-	    		createTextField(panel,FbSpieleServer.schatzFrageAbstandTeam2String, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + 200 - (int) Math.round(3.0/4.0 * teamPicturesWidth) -90 ,teamPicturesYpos + teamPicturesHeight-50, teamPicturesWidth, 300, 50);
-	    		
-	    		createTextField(panel,FbSpieleServer.doubleToString(FbSpieleServer.schatzFrageRichtigeAntwort), (int)Math.round((defaultFrameWidth-teamPicturesWidth)/2.0), teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
-	    	}
-	    	else {
-	    		if(team1SchatzungEingegeben) {
-	    			createTextField(panel,"*", teamPicturesXpos, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
-	    		}
-	    		if(team2SchatzungEingegeben) {
-	    			createTextField(panel,"*", defaultFrameWidth-teamPicturesXpos-teamPicturesWidth, teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
-	    		}
-	    		if(spielLeitungSchatzungEingegeben) {
-	    			createTextField(panel,"*", (int)Math.round((defaultFrameWidth-teamPicturesWidth)/2.0), teamPicturesYpos + teamPicturesHeight + 100, teamPicturesWidth, 300, 100);
-	    		}
-	    	}
-	    	
-	    	
-	    }
 	    
 	    
 	    overviewPanel = panel;

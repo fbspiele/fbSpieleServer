@@ -71,6 +71,14 @@ public class BeerlyClient {
 		FbSpieleServer.updateClientList();
 	}
 	
+	void  resetSchatztnAnswer() {
+		guessAnswer = null;
+		guessDistance = null;
+		abstandPosition = -1;
+		sendToSocket(FbSpieleServer.schatztn_sendReset);
+		FbSpieleServer.updateClientList();
+	}
+	
 	void updateGuessDistance(int comparison) {
 		if(guessAnswer==null) {
 			guessDistance = null;
