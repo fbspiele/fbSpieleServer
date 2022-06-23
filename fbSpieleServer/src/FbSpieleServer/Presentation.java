@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -55,6 +56,9 @@ public class Presentation implements Runnable {
 	final static String buzzerPanelNameString = "buzzerPanelNameString";
 	final static String werIstDasPanelNameString = "werIstDasPanelNameString";
 	final static String overviewPanelNameString = "overviewPanelNameString";
+	final static String woLiegtWasPanelNameString = "woLiegtWasPanelNameString";
+	final static String schatztnPanelNameString = "schatztnPanelNameString";
+	
 	JPanel buzzerPanel;
 	JPanel werIstDasPanel;
 	JPanel overviewPanel;
@@ -463,15 +467,16 @@ public class Presentation implements Runnable {
 	
 	public static TeamListPresentation woLiegtWasPresentation;
 	void woLiegtWasPresentationStarten() {
-		woLiegtWasPresentation = new TeamListPresentation("wo liegt was?");
+		woLiegtWasPresentation = new TeamListPresentation("wo liegt was?", woLiegtWasPanelNameString);
 		displayPanelInFrame(woLiegtWasPresentation.getGesamtPanel());
 	}
 	
+
 	
-	class WoLiegtWasPresentation extends TeamListPresentation{
-		WoLiegtWasPresentation(String title){
-			super(title);
-		}
+	public static TeamListPresentation schatztnPresentation;
+	void schatztnPresentationStarten() {
+		schatztnPresentation = new TeamListPresentation("schätztn?", schatztnPanelNameString);
+		displayPanelInFrame(schatztnPresentation.getGesamtPanel());
 	}
 	
 	
@@ -484,8 +489,19 @@ public class Presentation implements Runnable {
 		}
 	}
 	
+
+	
+	public TeamListPresentation getSchatztnPresentation() {
+		if(schatztnPresentation == null) {
+			return null;
+		}
+		else {
+			return schatztnPresentation;
+		}
+	}
+	
 	class TeamListPresentation {
-		final static String schatzPresentationName = "schatzPresentationName"; 
+		String panelTagString;
 		String title;
 		
 		JPanel panelTeam1;
@@ -505,11 +521,12 @@ public class Presentation implements Runnable {
 		List<Spieler> spielerListTeam1 = new ArrayList<>();
 		List<Spieler> spielerListTeam2 = new ArrayList<>();
 		
-		TeamListPresentation(String title){
+		TeamListPresentation(String title, String panelTagString){
 			this.title = title;
 			panelGes = new JPanel();
 			panelGes.setLayout(null);
-			panelGes.setName(schatzPresentationName);
+			this.panelTagString = panelTagString;
+			panelGes.setName(panelTagString);
 			JTextField titleText = new JTextField();
 			titleText.setText(title);
 			titleText.setBackground(new Color(0,0,0,0));
@@ -520,8 +537,6 @@ public class Presentation implements Runnable {
 	    	losungsTextField = createTextField(panelGes, "", 0, defaultFrameHeight - 200, defaultFrameWidth, 200, 100);
 			panelTeam1 = new JPanel();
 			panelTeam2 = new JPanel();
-			panelTeam1.setLayout(null);
-			panelTeam2.setLayout(null);
 			panelGes.add(panelTeam1);
 			panelGes.add(panelTeam2);
 		}
@@ -548,7 +563,7 @@ public class Presentation implements Runnable {
 			}
 		}
 		
-		String getSpielerAntwort(BeerlyClient client, boolean zensiert) {
+		String getSpielerWoLiegtWasAntwort(BeerlyClient client, boolean zensiert) {
 			// to be overwritten
 			if(zensiert) {
 				if(client.whereIsWhatAnswerPhi == null || client.whereIsWhatAnswerTheta == null) {
@@ -568,9 +583,31 @@ public class Presentation implements Runnable {
 				}			
 			}
 		}
+
+		
+		String getSpielerSchatztnAntwort(BeerlyClient client, boolean zensiert) {
+			// to be overwritten
+			if(zensiert) {
+				if(client.guessAnswer == null) {
+					return "";
+				}
+				else {
+					return "*";
+				}
+			}
+			else {
+				if(client.guessAnswer == null) {
+					return "";
+				}
+				else {
+					return FbSpieleServer.doubleToString(client.guessAnswer);
+				}			
+			}
+		}
+		 
 		 
 
-		String getSpielerAbstand(BeerlyClient client, boolean zensiert) {
+		String getSpielerWoLiegtWasAbstand(BeerlyClient client, boolean zensiert) {
 			// to be overwritten
 			if(zensiert) {
 				if(client.whereIsWhatAnswerDistance == null) {
@@ -587,6 +624,27 @@ public class Presentation implements Runnable {
 				else {
 					DecimalFormat outputFormat = new DecimalFormat("#.####");
 					return outputFormat.format(client.whereIsWhatAnswerDistance);	
+				}			
+			}
+		}
+
+
+		String getSpielerSchatztnAbstand(BeerlyClient client, boolean zensiert) {
+			// to be overwritten
+			if(zensiert) {
+				if(client.guessDistance == null) {
+					return "";
+				}
+				else {
+					return "*";
+				}
+			}
+			else {
+				if(client.guessDistance == null) {
+					return "";
+				}
+				else {
+					return FbSpieleServer.doubleToString(client.guessDistance);
 				}			
 			}
 		}
@@ -614,12 +672,24 @@ public class Presentation implements Runnable {
 		
 		
 		void updateTeamsPanel(boolean zensiert) {
+			
+			System.out.println("updateTeamsPanel");
+			
 			if(panelGes==null) {
 				return;
 			}
-			panelGes.removeAll();
-
+			panelGes.remove(panelTeam1);
+			panelGes.remove(panelTeam2);
+			panelTeam1 = new JPanel();
+			panelTeam2 = new JPanel();
+			panelTeam1.setLayout(panelGes.getLayout());
+			panelTeam2.setLayout(panelGes.getLayout());
+			panelTeam1.setBounds(panelGes.getBounds());
+			panelTeam2.setBounds(panelGes.getBounds());
 			
+			if(zensiert) {
+				losungsTextField.setText("");
+			}
 			
 			List<BeerlyClient> spielerListTeam1 = new ArrayList<>();
 			List<BeerlyClient> spielerListTeam2 = new ArrayList<>();
@@ -642,12 +712,16 @@ public class Presentation implements Runnable {
 			
 			int yPosTeams = 400;
 			
+
+		    List<BeerlyClient> orderedList = new ArrayList<BeerlyClient>();
+		    orderedList.addAll(FbSpieleServer.clientlist);
+			
 			if(!zensiert) {
-			    for(BeerlyClient clientListClient : FbSpieleServer.clientlist) {
+			    for(BeerlyClient clientListClient : orderedList) {
 			    	if(clientListClient.whereIsWhatAnswerDistance!=null) {
 				    	int clientListClientNumber = 1;
-				    	for(BeerlyClient client : FbSpieleServer.clientlist) {
-					    	if(clientListClient.whereIsWhatAnswerDistance!=null) {
+				    	for(BeerlyClient client : orderedList) {
+					    	if(client.whereIsWhatAnswerDistance!=null) {
 						    	if(client.whereIsWhatAnswerDistance<clientListClient.whereIsWhatAnswerDistance) {
 						    		clientListClientNumber++;
 						    	}
@@ -656,14 +730,27 @@ public class Presentation implements Runnable {
 				    	clientListClient.abstandPosition = clientListClientNumber;			    		
 			    	}
 			    }
-			    FbSpieleServer.clientlist.sort(new Comparator<BeerlyClient>() {
+			    orderedList.sort(new Comparator<BeerlyClient>() {
 			    	public int compare(BeerlyClient one, BeerlyClient two) {
 			    		return Integer.compare(one.abstandPosition, two.abstandPosition);
 			    	}
 			    });
+			    List<BeerlyClient> noAnswerList = new ArrayList<BeerlyClient>();
+			    for(BeerlyClient client : orderedList) {
+			    	if(client.abstandPosition== -1) {
+			    		noAnswerList.add(client);
+			    	}
+			    }
+			    for(BeerlyClient client : noAnswerList) {
+			    	orderedList.remove(client);
+			    }
+
+			    for(BeerlyClient client : noAnswerList) {
+			    	orderedList.add(client);
+			    }
 			}
 
-			for(BeerlyClient client : FbSpieleServer.clientlist) {
+			for(BeerlyClient client : orderedList) {
 				if(client.team == 1) {
 					spielerListTeam1.add(client);
 				}
@@ -690,30 +777,51 @@ public class Presentation implements Runnable {
 			for (int i = 0; i<spielerListTeam1.size(); i++) {
 				spieler = spielerListTeam1.get(i);
 				Color color = Color.decode(spieler.color);
-				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam1, yPosTeams+i*entryHeight, textFieldWidthsName, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam1, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam1, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAbstandNumber(spieler, zensiert), xPosNummerTeam1, yPosTeams+i*entryHeight, positionWidth, entryHeight, textSize, color);
+				String antwort = "";
+				String distance = "";
+				if(panelTagString == woLiegtWasPanelNameString) {
+					antwort = getSpielerWoLiegtWasAntwort(spieler, zensiert);
+					distance = getSpielerWoLiegtWasAbstand(spieler, zensiert);
+				}
+				else {
+					antwort = getSpielerSchatztnAntwort(spieler, zensiert);
+					distance = getSpielerSchatztnAbstand(spieler, zensiert);
+				}
+				createTextField(panelTeam1, spieler.name, xPosSpielerNamesTeam1, yPosTeams+i*entryHeight, textFieldWidthsName, entryHeight, textSize, color);
+				createTextField(panelTeam1, antwort, xPosSchatzTeam1, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelTeam1, distance, xPosAbstandTeam1, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelTeam1, getSpielerAbstandNumber(spieler, zensiert), xPosNummerTeam1, yPosTeams+i*entryHeight, positionWidth, entryHeight, textSize, color);
 			}
 
 			
 			for (int i = 0; i<spielerListTeam2.size(); i++) {
 				spieler = spielerListTeam2.get(i);
 				Color color = Color.decode(spieler.color);
-				createTextField(panelGes, spieler.name, xPosSpielerNamesTeam2, yPosTeams+i*entryHeight, textFieldWidthsName, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAntwort(spieler, zensiert), xPosSchatzTeam2, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAbstand(spieler, zensiert), xPosAbstandTeam2, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
-				createTextField(panelGes, getSpielerAbstandNumber(spieler, zensiert), xPosNummerTeam2, yPosTeams+i*entryHeight, positionWidth, entryHeight, textSize, color);
+				String antwort = "";
+				String distance = "";
+				if(panelTagString == woLiegtWasPanelNameString) {
+					antwort = getSpielerWoLiegtWasAntwort(spieler, zensiert);
+					distance = getSpielerWoLiegtWasAbstand(spieler, zensiert);
+				}
+				else {
+					antwort = getSpielerSchatztnAntwort(spieler, zensiert);
+					distance = getSpielerSchatztnAbstand(spieler, zensiert);
+				}
+				createTextField(panelTeam2, spieler.name, xPosSpielerNamesTeam2, yPosTeams+i*entryHeight, textFieldWidthsName, entryHeight, textSize, color);
+				createTextField(panelTeam2, antwort, xPosSchatzTeam2, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelTeam2, distance, xPosAbstandTeam2, yPosTeams+i*entryHeight, textFieldWidthsAnswer, entryHeight, textSize, color);
+				createTextField(panelTeam2, getSpielerAbstandNumber(spieler, zensiert), xPosNummerTeam2, yPosTeams+i*entryHeight, positionWidth, entryHeight, textSize, color);
 			}
+			panelGes.add(panelTeam1);
+			panelGes.add(panelTeam2);
 			
-			frame.revalidate();
-			frame.repaint();
-		
-			
+			panelGes.revalidate();
+			panelGes.repaint();
 		}
 		
 		void auflosen(String losung) {
 			losungsTextField.setText(losung);
+			updateTeamsPanel(false);
 		}
 		
 		JPanel getGesamtPanel() {

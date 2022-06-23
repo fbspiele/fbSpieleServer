@@ -46,7 +46,6 @@ public class FbSpieleServer {
     static JFrame frame;
     static int variableAddSubInt = 10;
     static int werIstDasBildNummer = 1;
-    static double schatzFrageRichtigeAntwort = 0;
     static double schatzFrageAntwortTeam1 = 0;
     static double schatzFrageAntwortTeam2 = 0;
     static double schatzFrageAbstandTeam1 = 1;
@@ -798,8 +797,14 @@ public class FbSpieleServer {
 	}
 	
 	static public void updateWoLiegtWasTeamPanels(boolean zensiert) {
-		//System.out.println("updating both teams via FbSpieleServer");
+		System.out.println("updating both teams via FbSpieleServer");
 		Presentation.woLiegtWasPresentation.updateTeamsPanel(zensiert);
+	}
+	
+
+	static public void updateSchatztnTeamPanels(boolean zensiert) {
+		System.out.println("updating both teams via FbSpieleServer");
+		Presentation.schatztnPresentation.updateTeamsPanel(zensiert);
 	}
 	
     
@@ -888,12 +893,12 @@ public class FbSpieleServer {
         			woLiegtWasRichtigesPhi = object.phi;
         			woLiegtWasRichtigesTheta = object.theta;
         			updateClientList();
-        			updateWoLiegtWasTeamPanels(false);
     			}
     			else
     			{
     				System.out.println("error in startFrage.addActionListener(new ActionListener(){\n\tindex "+String.valueOf(aktuelleWoLiegtWasFrage-1)+" außerhalb der liste");
     			}
+    			updateWoLiegtWasTeamPanels(true);
     		}
     	});
     	
@@ -947,9 +952,9 @@ public class FbSpieleServer {
     			}
     			
     			if(presentation.getWoLiegtWasPresentation() != null) {
-    				String phiThetaString = woLiegtWasRichtigesPhi + "," + woLiegtWasRichtigesTheta;
-
-        			updateWoLiegtWasTeamPanels(false);
+    				String phiString = String.format("%.4f", woLiegtWasRichtigesPhi);
+    				String thetaString = String.format("%.4f", woLiegtWasRichtigesTheta);
+    				String phiThetaString = phiString + "," + thetaString;
     				presentation.getWoLiegtWasPresentation().auflosen(phiThetaString);
     			}
 
@@ -1079,8 +1084,9 @@ public class FbSpieleServer {
     	initializeButton.setText("initialize");
     	initializeButton.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-    			presentation.woSchatztnStarten();
+    			presentation.schatztnPresentationStarten();
     			updateSchatztnTeamPanels(true);
+    			updateClientList();
 			}});
     	panel.add(initializeButton);
     	
@@ -1134,12 +1140,12 @@ public class FbSpieleServer {
         			SchatztnObject object = schatztnFrageList.get(aktuelleSchatztnFrage-1);
         			schatztnRichtigeValue = object.value;
         			updateClientList();
-        			updateSchatztnTeamPanels(false);
     			}
     			else
     			{
     				System.out.println("error in startFrage.addActionListener(new ActionListener(){\n\tindex "+String.valueOf(aktuelleSchatztnFrage)+" außerhalb der liste");
     			}
+    			updateSchatztnTeamPanels(true);
     		}
     	});
     	
@@ -1156,7 +1162,7 @@ public class FbSpieleServer {
         			}
     			}
 
-    			updateAktuelleSchatztnFrageNummer(aktuelleWoLiegtWasFrage + 1);
+    			updateAktuelleSchatztnFrageNummer(aktuelleSchatztnFrage + 1);
     		}
     	});
     	

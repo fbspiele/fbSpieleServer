@@ -51,7 +51,7 @@ public class BeerlyClient {
 		color = newColor;
 		FbSpieleServer.updateClientList();
 	}
-	void updateGuessAnswer(Double newAnswer, int distanceComparison) {
+	void updateGuessAnswer(Double newAnswer) {
 		guessAnswer = newAnswer;
 		FbSpieleServer.updateClientList();
 	}
@@ -79,12 +79,14 @@ public class BeerlyClient {
 		FbSpieleServer.updateClientList();
 	}
 	
+	
+	
 	void updateGuessDistance(int comparison) {
 		if(guessAnswer==null) {
 			guessDistance = null;
 			return;
 		}
-		double tempGuessDistance =  calcGuessDistance(guessAnswer, FbSpieleServer.schatzFrageRichtigeAntwort, comparison);
+		double tempGuessDistance =  calcGuessDistance(guessAnswer, FbSpieleServer.schatztnRichtigeValue, comparison);
 		if (tempGuessDistance < 0) {
 			guessDistance = null;
 		}
@@ -155,8 +157,13 @@ public class BeerlyClient {
 	}
 	
 	Object[] getTableRightAnswerArray(int guessComparison) {
-		String rightGuessAnswerString = String.valueOf(FbSpieleServer.schatzFrageRichtigeAntwort);
-		String rightGuessDistanceString = String.valueOf(calcGuessDistance(FbSpieleServer.schatzFrageRichtigeAntwort, FbSpieleServer.schatzFrageRichtigeAntwort, guessComparison)); 
+		
+		String rightGuessAnswerString = "";
+		String rightGuessDistanceString = ""; 
+		if(FbSpieleServer.schatztnRichtigeValue!=null) {
+			rightGuessAnswerString = String.valueOf(FbSpieleServer.schatztnRichtigeValue);
+			rightGuessDistanceString = String.valueOf(calcGuessDistance(FbSpieleServer.schatztnRichtigeValue, FbSpieleServer.schatztnRichtigeValue, guessComparison));
+		}
 		
 
 		String rightWhereIsWhatAnswerPhiString = "";

@@ -56,28 +56,6 @@ public class ListeningThread implements Runnable {
 	public void datenVerarbeiten(String msg) {
 		System.out.println(msg);
 		
-		//todoSCHÄTZFRAGEANTWORT
-		//dannEinfachMessageBoxUndWeiterLeite
-		String schatzFrageAntwortPreText = "schatzFrageAntwort";
-		if(msg.length()>schatzFrageAntwortPreText.length()) {
-			if(msg.substring(0,schatzFrageAntwortPreText.length()).equals(schatzFrageAntwortPreText)) {
-				String antwort = msg.substring(schatzFrageAntwortPreText.length());
-				if(client.team==1) {
-					fbSpieleServer.schatzFrageAntwortTeam1 = Double.valueOf(msg.substring(schatzFrageAntwortPreText.length()));
-					fbSpieleServer.presentation.team1SchatzungEingegeben = true;
-					fbSpieleServer.presentation.geradeSchatzFragenAuflosung = false;
-					fbSpieleServer.overViewPanelAnzeigen();
-				}
-				if(client.team==2) {
-					fbSpieleServer.schatzFrageAntwortTeam2 = Double.valueOf(msg.substring(schatzFrageAntwortPreText.length()));
-					fbSpieleServer.presentation.team2SchatzungEingegeben = true;
-					fbSpieleServer.presentation.geradeSchatzFragenAuflosung = false;
-					fbSpieleServer.overViewPanelAnzeigen();
-				}
-				System.out.println("schätzfrageantwort von "+client.name+" (team "+ client.team + "): "+antwort);
-			}
-		}
-		
 		
 		if(msg.contains("xxxwoLiegtWasMyCoordsPhiABC")) {
 			int phiStart = msg.indexOf("xxxwoLiegtWasMyCoordsPhiABC") + "xxxwoLiegtWasMyCoordsPhiABC".length();
@@ -95,7 +73,31 @@ public class ListeningThread implements Runnable {
 			client.updateWhereIsWhatAnswer(phi, theta);
 			Presentation.woLiegtWasPresentation.updateTeamsPanel(true);
 		}
-		
+
+		if(msg.contains("schatztn_sendTextStart")) {
+			int valueStart = msg.indexOf("schatztn_sendTextStart") + "schatztn_sendTextStart".length();
+			int valueEnd = msg.indexOf("schatztn_sendTextEnd");
+
+			
+			String strValue = msg.substring(valueStart, valueEnd);
+			System.out.println("schatztn new value "+strValue);
+			Double value = null;
+			try {
+				value = Double.valueOf(strValue);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(value!=null) {
+				client.updateGuessAnswer(value);
+				if(Presentation.schatztnPresentation!=null) {
+					Presentation.schatztnPresentation.updateTeamsPanel(true);
+				}
+			}
+			else {
+				System.out.println("schätzt antwort "+ strValue +" von "+client.name+"("+client.socket.getInetAddress()+")"+" konnte nicht zu double gemacht werden");
+			}
+		}
 
 		if(msg.contains("buzzer")) {
 			//todo
