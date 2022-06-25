@@ -265,7 +265,15 @@ public class FbSpieleServer {
         b1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				System.out.println(b1.getText() + " clicked");
-				
+
+		        Crypto clientCrypto = new Crypto(settingsEncryptionCrypto.decryptHex(settings.getStringSetting(settings.settingsKeyEncryptedPassword)),settingsEncryptionCrypto.decryptHex(settings.getStringSetting(settings.settingsKeyEncryptedSalt)));
+
+    	        String inputString = JOptionPane.showInputDialog(null, "string to decrypt");
+    	        String decrypted = clientCrypto.decryptHex(inputString);
+    	        System.out.println("encrypted\n\t"+inputString+"\nresults in decrypted\n\t"+decrypted);
+    	        
+    	        
+		        
 				//listeningThreadClass.executeMacro("buzzerVon(mein name,mein team,meine role,2399203)");
 			}
         });

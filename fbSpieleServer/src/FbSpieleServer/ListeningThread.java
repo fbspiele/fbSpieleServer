@@ -29,8 +29,10 @@ public class ListeningThread implements Runnable {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(client.socket.getInputStream()));
             while ( (data = in.readLine()) != null && client.socket.isConnected() && client.socket.isBound() && !stop) {
+            	System.out.println("encrypted\n\t"+data);
             	String decryptedData = client.crypto.decryptHex(data);
             	if(decryptedData!=null) {
+            		
                     datenVerarbeiten(decryptedData);
             	}
             	else {
