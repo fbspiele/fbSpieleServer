@@ -197,6 +197,7 @@ public class BeerlyClient {
 	public void sendToSocket(String msg) {
 		try {
 			String encryptedMsg = this.crypto.encryptHex(msg);
+			System.out.println("sending to "+name+"("+socket.getInetAddress()+")"+"\nmessage\t"+msg+"\nencrypted\t"+encryptedMsg);
 			PrintWriter printWriter = new PrintWriter(this.socket.getOutputStream(),true);
 			printWriter.println(encryptedMsg);
 			printWriter.flush();	//avoids that 2 message will be received at once (-> wouldn't be able to be decrypted)

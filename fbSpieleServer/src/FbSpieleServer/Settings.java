@@ -7,8 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Settings {
-	private static String settingsFilename;
-	static final String defaultSettingsFileName = "defaultSettings.txt";
+	private static String settingsFilePath;
+	static final String defaultSettingsFilePath = "/resouces/defaultSettings.txt";
 
 	static final String settingsKeyTeam1 = "team 1";
 	static String team1 = "";
@@ -47,8 +47,8 @@ public class Settings {
     	bisherMaximalePunkteTeam2 = getIntSetting(settingsKeyBisherMaxPunkteTeam2);
     }
     
-    public Settings(String settingsFileName) {
-    	this.settingsFilename = settingsFileName;
+    public Settings(String settingsFilePath) {
+    	this.settingsFilePath = settingsFilePath;
     	refreshSettingsStringList(true);
     }
     
@@ -74,7 +74,7 @@ public class Settings {
     
     public static boolean refreshSettingsStringList(boolean createDefaultFileIfNonExistent) {
     	//final String currentDir = System.getProperty("user.dir");
-    	Path path = Path.of(settingsFilename);
+    	Path path = Path.of(settingsFilePath);
     	String settings = "";
     	try {
     		settings = new String(Files.readString(path));	
@@ -87,7 +87,7 @@ public class Settings {
         		System.out.println("terminating app for rerun (reload)");
         		
         		try {
-        		    Files.write(Paths.get(defaultSettingsFileName), getDefaultSettingsFileText().getBytes(StandardCharsets.UTF_8));
+        		    Files.write(Paths.get(defaultSettingsFilePath), getDefaultSettingsFileText().getBytes(StandardCharsets.UTF_8));
         		} catch (Exception ex) {
         			ex.printStackTrace();
         		}    			
@@ -162,7 +162,7 @@ public class Settings {
     		sb.append(settingsList[i]).append("\n");
     	}
 		try {
-		    Files.write(Paths.get(settingsFilename), sb.toString().getBytes(StandardCharsets.UTF_8));
+		    Files.write(Paths.get(settingsFilePath), sb.toString().getBytes(StandardCharsets.UTF_8));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}    	

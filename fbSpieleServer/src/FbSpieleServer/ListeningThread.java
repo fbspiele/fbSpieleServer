@@ -251,7 +251,7 @@ public class ListeningThread implements Runnable {
 		      try {
 		    	//System.out.println("playSound: "+url);
 		        Clip clip = AudioSystem.getClip();
-		        File audioFile = new File("/home/buselmu/fbspiele/presentation/audio/" + url);
+		        File audioFile = new File("resources/sounds/" + url);
 		        //System.out.println(clip.toString());
 		        AudioInputStream inputStream = AudioSystem.getAudioInputStream(audioFile);
 		        clip.open(inputStream);

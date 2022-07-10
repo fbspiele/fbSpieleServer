@@ -34,13 +34,13 @@ import javax.swing.JTextField;
 
 public class Presentation implements Runnable {
 	
-	final static String team1IconPath = "src/team1_500x500.png";
-	final static String team2IconPath = "src/team2_500x500.png";
-	final static String alleTrinkenIconPath = "src/alle trinken.png";
-	final static String newRuleIconPath = "src/new rule.png";
+	final static String team1IconPath = "resources/pictures/team1_500x500.png";
+	final static String team2IconPath = "resources/pictures/team2_500x500.png";
+	final static String alleTrinkenIconPath = "resources/pictures/alle trinken.png";
+	final static String newRuleIconPath = "resources/pictures/new rule.png";
 	
-	final static String rightArrowPath = "src/schatzfragenpfeilrechts.png";
-	final static String leftArrowPath = "src/schatzfragenpfeillinks.png";
+	final static String rightArrowPath = "resources/pictures/schatzfragenpfeilrechts.png";
+	final static String leftArrowPath = "resources/pictures/schatzfragenpfeillinks.png";
 	
 	
 	
@@ -118,7 +118,7 @@ public class Presentation implements Runnable {
 		JPanel panel = new JPanel();
 		panel.setName(werIstDasPanelNameString);
 		panel.setLayout(null);
-		String werIstDasPath = "src/weristdas/";
+		String werIstDasPath = "resources/games/werIstDas/";
 		
 		String bildNrString = "";
 		if(bildNr < 10 && bildNr > -1) {
@@ -473,6 +473,7 @@ public class Presentation implements Runnable {
 	
 
 	
+	
 	public static TeamListPresentation schatztnPresentation;
 	void schatztnPresentationStarten() {
 		schatztnPresentation = new TeamListPresentation("schätztn?", schatztnPanelNameString);
@@ -717,37 +718,72 @@ public class Presentation implements Runnable {
 		    orderedList.addAll(FbSpieleServer.clientlist);
 			
 			if(!zensiert) {
-			    for(BeerlyClient clientListClient : orderedList) {
-			    	if(clientListClient.whereIsWhatAnswerDistance!=null) {
-				    	int clientListClientNumber = 1;
-				    	for(BeerlyClient client : orderedList) {
-					    	if(client.whereIsWhatAnswerDistance!=null) {
-						    	if(client.whereIsWhatAnswerDistance<clientListClient.whereIsWhatAnswerDistance) {
-						    		clientListClientNumber++;
+				if(panelTagString == woLiegtWasPanelNameString) {
+				    for(BeerlyClient clientListClient : orderedList) {
+				    	if(clientListClient.whereIsWhatAnswerDistance!=null) {
+					    	int clientListClientNumber = 1;
+					    	for(BeerlyClient client : orderedList) {
+						    	if(client.whereIsWhatAnswerDistance!=null) {
+							    	if(client.whereIsWhatAnswerDistance<clientListClient.whereIsWhatAnswerDistance) {
+							    		clientListClientNumber++;
+							    	}
 						    	}
-					    	}
-					    }
-				    	clientListClient.abstandPosition = clientListClientNumber;			    		
-			    	}
-			    }
-			    orderedList.sort(new Comparator<BeerlyClient>() {
-			    	public int compare(BeerlyClient one, BeerlyClient two) {
-			    		return Integer.compare(one.abstandPosition, two.abstandPosition);
-			    	}
-			    });
-			    List<BeerlyClient> noAnswerList = new ArrayList<BeerlyClient>();
-			    for(BeerlyClient client : orderedList) {
-			    	if(client.abstandPosition== -1) {
-			    		noAnswerList.add(client);
-			    	}
-			    }
-			    for(BeerlyClient client : noAnswerList) {
-			    	orderedList.remove(client);
-			    }
+						    }
+					    	clientListClient.abstandPosition = clientListClientNumber;			    		
+				    	}
+				    }
+				    orderedList.sort(new Comparator<BeerlyClient>() {
+				    	public int compare(BeerlyClient one, BeerlyClient two) {
+				    		return Integer.compare(one.abstandPosition, two.abstandPosition);
+				    	}
+				    });
+				    List<BeerlyClient> noAnswerList = new ArrayList<BeerlyClient>();
+				    for(BeerlyClient client : orderedList) {
+				    	if(client.abstandPosition== -1) {
+				    		noAnswerList.add(client);
+				    	}
+				    }
+				    for(BeerlyClient client : noAnswerList) {
+				    	orderedList.remove(client);
+				    }
 
-			    for(BeerlyClient client : noAnswerList) {
-			    	orderedList.add(client);
-			    }
+				    for(BeerlyClient client : noAnswerList) {
+				    	orderedList.add(client);
+				    }					
+				}
+				else {
+				    for(BeerlyClient clientListClient : orderedList) {
+				    	if(clientListClient.guessDistance!=null) {
+					    	int clientListClientNumber = 1;
+					    	for(BeerlyClient client : orderedList) {
+						    	if(client.guessDistance!=null) {
+							    	if(client.guessDistance<clientListClient.guessDistance) {
+							    		clientListClientNumber++;
+							    	}
+						    	}
+						    }
+					    	clientListClient.abstandPosition = clientListClientNumber;			    		
+				    	}
+				    }
+				    orderedList.sort(new Comparator<BeerlyClient>() {
+				    	public int compare(BeerlyClient one, BeerlyClient two) {
+				    		return Integer.compare(one.abstandPosition, two.abstandPosition);
+				    	}
+				    });
+				    List<BeerlyClient> noAnswerList = new ArrayList<BeerlyClient>();
+				    for(BeerlyClient client : orderedList) {
+				    	if(client.abstandPosition== -1) {
+				    		noAnswerList.add(client);
+				    	}
+				    }
+				    for(BeerlyClient client : noAnswerList) {
+				    	orderedList.remove(client);
+				    }
+
+				    for(BeerlyClient client : noAnswerList) {
+				    	orderedList.add(client);
+				    }
+				}
 			}
 
 			for(BeerlyClient client : orderedList) {

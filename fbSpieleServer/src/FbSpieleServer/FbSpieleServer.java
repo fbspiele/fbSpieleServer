@@ -25,8 +25,9 @@ public class FbSpieleServer {
 	static int port = 2079;
 
 
-	final static String woLiegtWasSubfolder = "woLiegtWas";
-	final static String schatztnSubfolder = "schatztn";
+	final static String woLiegtWasSubfolder = "resources/games/woLiegtWas";
+	final static String schatztnSubfolder = "resources/games/schatztn";
+	final static String settingsFilePath = "resources/settings.txt";
 	
 	static String team1Name = "team1";
 	static String team2Name = "team2";
@@ -101,7 +102,7 @@ public class FbSpieleServer {
     	
     	settingsEncryptionCrypto = new Crypto(settingsEncryptionPassword, settingsEncryptionSalt);
     	
-    	settings = new Settings("settings.txt");
+    	settings = new Settings(settingsFilePath);
     	
     	
     	Settings.loadSettings();
@@ -777,31 +778,34 @@ public class FbSpieleServer {
 	final static String woLiegtWasReset = "woLiegtWasReset";
 	
 
-	final static String entrySendTextGenerelSplitter = "entrySendTextGenerelSplitter";
+	final static String entrySendTextGenerelStart = "entryStart";
+	final static String entrySendTextGenerelEnd = "entryEnd";
 	
-	final static String entrySendTextPhiStart = "entrySendTextPhiStart";
-	final static String entrySendTextPhiEnd = "entrySendTextPhiEnd";
-	final static String entrySendTextThetaStart = "entrySendTextThetaStart";
-	final static String entrySendTextThetaEnd = "entrySendTextThetaEnd";
-	final static String entrySendTextColorStart = "entrySendTextColorStart";
-	final static String entrySendTextColorEnd = "entrySendTextColorEnd";
-	final static String entrySendTextExtraStart = "entrySendTextExtraStart";
-	final static String entrySendTextExtraEnd = "entrySendTextExtraEnd";
+	final static String entrySendTextPhiStart = "phiStart";
+	final static String entrySendTextPhiEnd = "phiEnd";
+	final static String entrySendTextThetaStart = "thetaStart";
+	final static String entrySendTextThetaEnd = "thetaEnd";
+	final static String entrySendTextColorStart = "colorStart";
+	final static String entrySendTextColorEnd = "colorEnd";
+	final static String entrySendTextExtraStart = "extraStart";
+	final static String entrySendTextExtraEnd = "extraEnd";
 	
-	final static String entrySendTextExtraRightAnswer = "entrySendTextExtraRightAnswer";
-	final static String entrySendTextExtraClosest = "entrySendTextExtraClosest";
+	final static String entrySendTextExtraRightAnswer = "rightAnswer";
+	final static String entrySendTextExtraClosest = "closest";
 
-	final static String closestGuessSendText = "closestGuessSendText";
+	final static String closestGuessSendText = "closestSendText";
 	
 	
 	
 
 	
 	final static String getWoLiegtWasEntrySendText(Double phi, Double theta, String color, String extraText) {
-		return entrySendTextPhiStart+String.valueOf(phi)+entrySendTextPhiEnd
+		return entrySendTextGenerelStart
+				+entrySendTextPhiStart+String.valueOf(phi)+entrySendTextPhiEnd
 				+entrySendTextThetaStart+String.valueOf(theta)+entrySendTextThetaEnd
 				+entrySendTextColorStart+color+entrySendTextColorEnd
-				+entrySendTextExtraStart+extraText+entrySendTextExtraEnd;
+				+entrySendTextExtraStart+extraText+entrySendTextExtraEnd
+				+entrySendTextGenerelEnd;
 	}
 	
 	static public void updateWoLiegtWasTeamPanels(boolean zensiert) {
@@ -915,6 +919,7 @@ public class FbSpieleServer {
     	aufloesen.setText("auflösen");
     	aufloesen.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
+    			
     			BeerlyClient closestClient = null;
     			for(BeerlyClient client:clientlist) {
     				if(closestClient==null) {
@@ -929,13 +934,14 @@ public class FbSpieleServer {
     				}
     			}
 
-    			StringBuilder stringBuilder = new StringBuilder();
-    			stringBuilder.append(entrySendTextGenerelSplitter);
+
+    			List<String> sendTextList = new ArrayList<>();		// nicht alles zusammen senden da sonst der string zu lang wird und dass mit dem encrypten/decrypten/senden probleme gibt
+    			
+    			
     			
 
     			if(woLiegtWasRichtigesPhi != null && woLiegtWasRichtigesTheta != null) {
-    				stringBuilder.append(getWoLiegtWasEntrySendText(woLiegtWasRichtigesPhi, woLiegtWasRichtigesTheta, "#000000", entrySendTextExtraRightAnswer));
-        			stringBuilder.append(entrySendTextGenerelSplitter);
+    				sendTextList.add(getWoLiegtWasEntrySendText(woLiegtWasRichtigesPhi, woLiegtWasRichtigesTheta, "#000000", entrySendTextExtraRightAnswer));
     			}
 				
     			for(BeerlyClient client:clientlist) {
@@ -944,19 +950,20 @@ public class FbSpieleServer {
     					extraText = entrySendTextExtraClosest;
     				}
     				if(client.whereIsWhatAnswerPhi!=null && client.whereIsWhatAnswerTheta != null && client.color!=null) {
-    					stringBuilder.append(getWoLiegtWasEntrySendText(client.whereIsWhatAnswerPhi, client.whereIsWhatAnswerTheta, client.color, extraText));
-    	    			stringBuilder.append(entrySendTextGenerelSplitter);
+    					sendTextList.add(getWoLiegtWasEntrySendText(client.whereIsWhatAnswerPhi, client.whereIsWhatAnswerTheta, client.color, extraText));
     				}    				
     			}
     			
     			System.out.println(clientlist.size());
     			
-    			String totalSendText = woLiegtWasAuflosungStart + stringBuilder.toString() + woLiegtWasAuflosungEnd;
     			
-    			System.out.println(totalSendText);
 
     			for(BeerlyClient client:clientlist) {
-    				client.sendToSocket(totalSendText);
+    				client.sendToSocket(woLiegtWasAuflosungStart);
+    				for (String sendTextEntry:sendTextList) {
+        				client.sendToSocket(sendTextEntry);
+    				}
+    				client.sendToSocket(woLiegtWasAuflosungEnd);
     			}
     			
     			if(presentation.getWoLiegtWasPresentation() != null) {
