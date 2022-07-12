@@ -8,3 +8,4 @@ wo liegt was
 
 todo
   - hint field max width
+  - auto switch back to wo liegt was und schätztn overview nach punkt gegeben
