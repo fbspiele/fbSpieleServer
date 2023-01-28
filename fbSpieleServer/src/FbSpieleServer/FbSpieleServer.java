@@ -2,8 +2,10 @@ package FbSpieleServer;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -12,6 +14,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.*;
@@ -27,6 +30,8 @@ public class FbSpieleServer {
 
 	final static String woLiegtWasSubfolder = "resources/games/woLiegtWas";
 	final static String schatztnSubfolder = "resources/games/schatztn";
+	final static String werIstDasParentfolder = "resources/games/werIstDas";
+	final static String werIstDasSubfolder = "";
 	final static String settingsFilePath = "resources/settings.txt";
 	
 	static String team1Name = "team1";
@@ -37,6 +42,7 @@ public class FbSpieleServer {
     public static volatile List<BeerlyClient> clientlist;
     public static volatile List<WoLiegtWasObject> woliegtWasList = new ArrayList<>();
     public static volatile List<SchatztnObject> schatztnFrageList= new ArrayList<>();
+    public static volatile List<File> werIstDasFiles = new ArrayList<>();
     static JPanel panel;
     static DefaultTableModel tableModel;
     static JTable jTable;
@@ -634,6 +640,50 @@ public class FbSpieleServer {
     	return addSubPoints;
 	}
 	
+
+	static int upateWeristDasFolder(String subFolder) {
+		
+    	File folder = new File(werIstDasParentfolder+"/"+subFolder);
+
+		werIstDasFiles = new ArrayList<>();
+
+		File[] files = folder.listFiles();
+		Arrays.sort(files);
+		for (final File file : files) {
+			werIstDasFiles.add(file);
+		}
+    	
+    	return folder.listFiles().length;
+		
+	}
+	
+	static int checkBildNummerExists(int nummer) {
+		if(nummer - 1 < 0) {
+			System.out.println("error index "+ nummer+" out of bounds (<1)");
+			return 0;
+		}
+		else if(nummer > werIstDasFiles.size()) {
+			System.out.println("error index "+ nummer+" out of bounds (> anzahl files im ordner)");
+			return -1;
+		}
+		else {
+			return nummer;
+		}
+	}
+	
+	static void updateBildAnzeige(JTextArea bildAnzeige, int nummer) {
+		if (checkBildNummerExists(nummer)>0) {
+			String name = werIstDasFiles.get(nummer - 1).getName();		
+			bildAnzeige.setText(name + " (bild "+nummer+")");
+		}
+		else if(checkBildNummerExists(nummer)==-1) {
+			bildAnzeige.setText("alle durch ("+nummer+")");
+		}
+		else if(checkBildNummerExists(nummer)==0) {
+			bildAnzeige.setText("0");
+		}
+	}
+	
 	static JPanel getWerIstDasPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -647,30 +697,76 @@ public class FbSpieleServer {
     	panel.add(titleText);
 
 
-    	JButton buttonWerIstDasStarten = new JButton();
-    	buttonWerIstDasStarten.setText("starten");
-    	buttonWerIstDasStarten.addActionListener(new ActionListener(){
-    		public void actionPerformed(ActionEvent arg0) {
-				//System.out.println(buttonWerIstDasStarten.getText() + " clicked");
+    	JTextArea bildAnzeige = new JTextArea();
+    	bildAnzeige.setText("next bild nr "+werIstDasBildNummer);
+    	bildAnzeige.setLineWrap(true);
+    	bildAnzeige.setPreferredSize(new Dimension(100, 75));
+    	bildAnzeige.setWrapStyleWord(true);
+    	bildAnzeige.setAlignmentX(JTextField.CENTER);
 
-				presentation.werIstDasBildAnzeigen(0);
-    		}
-    	});
     	
-    	panel.add(buttonWerIstDasStarten);
-
-    	JTextField bildNummerAnzeige = new JTextField();
-    	bildNummerAnzeige.setText("next bild nr "+werIstDasBildNummer);
-    	bildNummerAnzeige.setHorizontalAlignment(JTextField.CENTER);
+    	
+    	JButton folderButton = new JButton();
+    	folderButton.setText("folder?");
+    	folderButton.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			File folder = new File(werIstDasParentfolder);
+    			if(!folder.isDirectory()) {
+    				System.out.println("ERROR wer ist das folder ("+folder.getAbsolutePath()+") not found");
+    			}
+    			else if(folder.listFiles().length<=0) {
+    				System.out.println("ERROR no subfolder in wer ist das folder ("+folder.getAbsolutePath()+")");	
+    			}
+    			else {
+					//1. Create the frame.
+					JFrame frame = new JFrame("select wer ist das folder");
+					frame.setLayout(new GridLayout(folder.listFiles().length,1));
+		
+					//2. Optional: What happens when the frame closes?
+					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+					for (final File file : folder.listFiles()) {
+				    	JButton button = new JButton();
+				    	button.setText(file.getName());
+				    	button.addActionListener(new ActionListener(){
+				    		public void actionPerformed(ActionEvent arg0) {
+				    			String foldername = file.getName();
+						        int fragenAnzahl = upateWeristDasFolder(foldername);
+						        folderButton.setText("folder = "+foldername+" ("+fragenAnzahl+" Fragen)");
+						        frame.dispose();
+						        if(fragenAnzahl<1) {
+						        	System.out.println("!warning! + 0 bilder in dem ordner");
+							        werIstDasBildNummer = 0;
+							        bildAnzeige.setText("error: 0 files im ordner");
+						        }
+						        else {
+							        werIstDasBildNummer = 1;	
+							        updateBildAnzeige(bildAnzeige, werIstDasBildNummer);					        	
+						        }
+							}});
+				    	frame.add(button);
+					}
+					
+					//4. Size the frame.
+					frame.pack();
+		
+					//5. Show it.
+					frame.setVisible(true);
+    			}
+    				
+    			
+			}});
+    	
+    	panel.add(folderButton);
+    	
     	
     	
     	JButton buttonPlus1 = new JButton();
     	buttonPlus1.setText("nr +1");
     	buttonPlus1.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-				//System.out.println(buttonPlus1.getText() + " clicked");
     			werIstDasBildNummer++;
-    	    	bildNummerAnzeige.setText("next bild nr "+werIstDasBildNummer);		
+    			updateBildAnzeige(bildAnzeige, werIstDasBildNummer);
     		}
     	});
     	
@@ -679,9 +775,10 @@ public class FbSpieleServer {
     	buttonMinus1.setText("nr -1");
     	buttonMinus1.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-				//System.out.println(buttonPlus1.getText() + " clicked");
-    			werIstDasBildNummer--;		
-    	    	bildNummerAnzeige.setText("next bild nr "+werIstDasBildNummer);
+    			if(werIstDasBildNummer>0) {
+        			werIstDasBildNummer--;    				
+    			}
+    			updateBildAnzeige(bildAnzeige, werIstDasBildNummer);
     		}
     	});
     	
@@ -690,19 +787,27 @@ public class FbSpieleServer {
     	buttonWerIstDasGo.setText("go");
     	buttonWerIstDasGo.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-				//System.out.println(buttonWerIstDasGo.getText() + " clicked");
-    			
-				presentation.werIstDasBildAnzeigen(werIstDasBildNummer);
-    			
-    			
-    			werIstDasBildNummer++;	
-    	    	bildNummerAnzeige.setText("next bild nr "+werIstDasBildNummer);			
+
+    			if(checkBildNummerExists(werIstDasBildNummer)>0) {
+    				presentation.werIstDasBildAnzeigen(werIstDasFiles.get(werIstDasBildNummer - 1).getPath());
+        			werIstDasBildNummer++;	
+        			updateBildAnzeige(bildAnzeige, werIstDasBildNummer);
+    			}
+    			else {
+    				System.out.println("error index "+ werIstDasBildNummer+" out of bounds (<1 oder > anzahl files im ordner)");
+    			}
     		}
     	});
     	
     	
     	panel.add(buttonPlus1);
-    	panel.add(bildNummerAnzeige);
+    	
+
+    	JTextField nachstesBildTitle = new JTextField();
+    	nachstesBildTitle.setText("nächstes bild:");
+
+    	panel.add(nachstesBildTitle);
+    	panel.add(bildAnzeige);
     	panel.add(buttonMinus1);
     	panel.add(buttonWerIstDasGo);
     	
@@ -746,7 +851,8 @@ public class FbSpieleServer {
     	return counter;
 		
 	}
-	static JTextField woLiegtWasFrageNummerText, woLiegtWasKeyText;
+	static JTextField woLiegtWasFrageNummerText;
+	static JTextArea woLiegtWasKeyText;
 	
 	
 	static void updateAktuelleWoLiegtWasFrageNummer(int newNumber) {
@@ -819,7 +925,8 @@ public class FbSpieleServer {
 		Presentation.schatztnPresentation.updateTeamsPanel(zensiert);
 	}
 	
-    
+
+	
 	static JPanel getWoliegtWasPanel() {
 		
 		
@@ -833,13 +940,49 @@ public class FbSpieleServer {
     	
     	panel.add(titleText);
     	
+
+   	
+    	
     	JButton fileButton = new JButton();
     	fileButton.setText("file?");
     	fileButton.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent arg0) {
-		        String filename = JOptionPane.showInputDialog(null, "file name?");
-		        int fragenAnzahl = upateWoLiegtWasFragen(filename);
-		        fileButton.setText("file = "+filename+" ("+fragenAnzahl+" Fragen)");
+    			File folder = new File(woLiegtWasSubfolder);
+    			if(!folder.isDirectory()) {
+    				System.out.println("ERROR wo liegt was folder ("+folder.getAbsolutePath()+") not found");
+    			}
+    			else if(folder.listFiles().length<=0) {
+    				System.out.println("ERROR no file in wo liegt was folder ("+folder.getAbsolutePath()+")");	
+    			}
+    			else {
+					//1. Create the frame.
+					JFrame frame = new JFrame("select wo liegt was file");
+					frame.setLayout(new GridLayout(folder.listFiles().length,1));
+		
+					//2. Optional: What happens when the frame closes?
+					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+					for (final File file : folder.listFiles()) {
+				    	JButton button = new JButton();
+				    	button.setText(file.getName());
+				    	button.addActionListener(new ActionListener(){
+				    		public void actionPerformed(ActionEvent arg0) {
+				    			String filename = file.getName();
+						        int fragenAnzahl = upateWoLiegtWasFragen(filename);
+						        fileButton.setText("file = "+filename+" ("+fragenAnzahl+" Fragen)");
+						        frame.dispose();
+							}});
+				    	frame.add(button);
+					}
+					
+					//4. Size the frame.
+					frame.pack();
+		
+					//5. Show it.
+					frame.setVisible(true);
+    			}
+    				
+    			
 			}});
     	
     	panel.add(fileButton);
@@ -889,9 +1032,13 @@ public class FbSpieleServer {
     	panel.add(fragenNavigationPanel);
     	
 
-    	woLiegtWasKeyText = new JTextField();
+    	woLiegtWasKeyText = new JTextArea();
     	woLiegtWasKeyText.setText("nächste frage key");
-    	woLiegtWasKeyText.setHorizontalAlignment(JTextField.CENTER);
+    	woLiegtWasKeyText.setLineWrap(true);
+    	woLiegtWasKeyText.setPreferredSize(new Dimension(100, 75));
+    	woLiegtWasKeyText.setWrapStyleWord(true);
+    	woLiegtWasKeyText.setAlignmentX(JTextField.CENTER);
+
 
     	JButton startFrage = new JButton();
     	startFrage.setText("start diese frage (reset)");
@@ -1037,7 +1184,8 @@ public class FbSpieleServer {
 		
 	}
 
-	static JTextField schatztnFrageNummerText, schatztnKeyText;
+	static JTextField schatztnFrageNummerText;
+	static JTextArea schatztnKeyText;
 	
 	static void updateAktuelleSchatztnFrageNummer(int newNumber) {
 		aktuelleSchatztnFrage = newNumber;
@@ -1060,6 +1208,9 @@ public class FbSpieleServer {
     			schatztnKeyText.setText("KEINE FRAGEN MEHR IN DEM FILE");
     		}
     	}
+    	if(schatztnKeyText!=null) {
+        	schatztnKeyText.getRootPane().setMaximumSize( new Dimension(10,10));    		
+    	}
 	}
 	
 
@@ -1072,7 +1223,8 @@ public class FbSpieleServer {
 		
 		
 		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));	
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		
 
     	
     	JTextField titleText = new JTextField();
@@ -1082,7 +1234,7 @@ public class FbSpieleServer {
     	
     	panel.add(titleText);
 
-    	
+    	/*
     	JButton fileButton = new JButton();
     	fileButton.setText("file?");
     	fileButton.addActionListener(new ActionListener(){
@@ -1093,7 +1245,51 @@ public class FbSpieleServer {
 			}});
     	
     	panel.add(fileButton);
+    	*/
+
+    	JButton fileButton = new JButton();
+    	fileButton.setText("file?");
+    	fileButton.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+    			File folder = new File(schatztnSubfolder);
+    			if(!folder.isDirectory()) {
+    				System.out.println("ERROR schatztn folder ("+folder.getAbsolutePath()+") not found");
+    			}
+    			else if(folder.listFiles().length<=0) {
+    				System.out.println("ERROR no file in schatztn folder ("+folder.getAbsolutePath()+")");	
+    			}
+    			else {
+					//1. Create the frame.
+					JFrame frame = new JFrame("select schatztn fragenfile");
+					frame.setLayout(new GridLayout(folder.listFiles().length,1));
+		
+					//2. Optional: What happens when the frame closes?
+					frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+					for (final File file : folder.listFiles()) {
+				    	JButton button = new JButton();
+				    	button.setText(file.getName());
+				    	button.addActionListener(new ActionListener(){
+				    		public void actionPerformed(ActionEvent arg0) {
+				    			String filename = file.getName();
+						        int fragenAnzahl = upateSchatztnFragen(filename);
+						        fileButton.setText("file = "+filename+" ("+fragenAnzahl+" Fragen)");
+						        frame.dispose();
+							}});
+				    	frame.add(button);
+					}
+					
+					//4. Size the frame.
+					frame.pack();
+		
+					//5. Show it.
+					frame.setVisible(true);
+    			}
+    				
+    			
+			}});
     	
+    	panel.add(fileButton);
 
     	JButton initializeButton = new JButton();
     	initializeButton.setText("initialize");
@@ -1138,10 +1334,12 @@ public class FbSpieleServer {
 
     	panel.add(fragenNavigationPanel);
     	
-
-    	schatztnKeyText = new JTextField();
+    	schatztnKeyText = new JTextArea();
     	schatztnKeyText.setText("nächste frage key");
-    	schatztnKeyText.setHorizontalAlignment(JTextField.CENTER);
+    	schatztnKeyText.setLineWrap(true);
+    	schatztnKeyText.setPreferredSize(new Dimension(100, 75));
+    	schatztnKeyText.setWrapStyleWord(true);
+    	schatztnKeyText.setAlignmentX(JTextField.CENTER);
 
     	
     	JButton startFrage = new JButton();
