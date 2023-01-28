@@ -1,5 +1,6 @@
 package FbSpieleServer;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -8,7 +9,6 @@ import java.nio.file.Paths;
 
 public class Settings {
 	private static String settingsFilePath;
-	static final String defaultSettingsFilePath = "/resouces/defaultSettings.txt";
 
 	static final String settingsKeyTeam1 = "team 1";
 	static String team1 = "";
@@ -55,6 +55,7 @@ public class Settings {
     static String getDefaultSettingsFileText() {
 		String defaultSettingsFileText = "this is the default fiel" + "\n" + "make the appropriate changes here" + "\n" + "then rename this file to settings.txt and rerun the server" + "\n\n";
 
+		
 		defaultSettingsFileText = defaultSettingsFileText + settingsKeyEncryptedPassword + "\n" + "my super nice password (encrypted)" + "\n\n";
 		defaultSettingsFileText = defaultSettingsFileText + settingsKeyEncryptedSalt + "\n" + "my super nice salt (encrypted)" + "\n\n";
 		
@@ -76,6 +77,12 @@ public class Settings {
     	//final String currentDir = System.getProperty("user.dir");
     	Path path = Path.of(settingsFilePath);
     	String settings = "";
+    	
+    	File tempSettingsFile = new File(settingsFilePath);
+    	File tempSettingsFolder = new File(tempSettingsFile.getParent());
+    	if(!tempSettingsFolder.isDirectory()) {
+    		System.out.println("!warning! settingsfolder ("+tempSettingsFolder.getAbsolutePath()+") doesn't exist");
+    	}
     	try {
     		settings = new String(Files.readString(path));	
     		//System.out.println("settings:");
@@ -83,11 +90,11 @@ public class Settings {
     	}
     	catch(Exception e) {
     		if(createDefaultFileIfNonExistent) {
-        		System.out.println("creating default file");
+        		System.out.println("creating settings file from default values");
         		System.out.println("terminating app for rerun (reload)");
         		
         		try {
-        		    Files.write(Paths.get(defaultSettingsFilePath), getDefaultSettingsFileText().getBytes(StandardCharsets.UTF_8));
+        		    Files.write(Paths.get(settingsFilePath), getDefaultSettingsFileText().getBytes(StandardCharsets.UTF_8));
         		} catch (Exception ex) {
         			ex.printStackTrace();
         		}    			
