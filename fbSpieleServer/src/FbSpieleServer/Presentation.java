@@ -109,33 +109,19 @@ public class Presentation implements Runnable {
 		displayPanelInFrame(getOverviewPanel());
 	}
 	
-	public void werIstDasBildAnzeigen(int bildNr) {
-		displayPanelInFrame(getWerIstDasPanel(bildNr));
+	public void werIstDasBildAnzeigen(String path) {
+		displayPanelInFrame(getWerIstDasPanel(path));
 	}
 	
-	JPanel getWerIstDasPanel(int bildNr) {
+	JPanel getWerIstDasPanel(String path) {
 		
 		JPanel panel = new JPanel();
 		panel.setName(werIstDasPanelNameString);
 		panel.setLayout(null);
-		String werIstDasPath = "resources/games/werIstDas/";
-		
-		String bildNrString = "";
-		if(bildNr < 10 && bildNr > -1) {
-			bildNrString = "0"+ String.valueOf(bildNr);
-		}
-		else if (bildNr < 100 && bildNr > -1) {
-			bildNrString = String.valueOf(bildNr);
-		}
-		else {
-			System.out.println("ERROR bildnr in wer ist das panel nicht zwischen 1 und 99");
-			return panel;
-		}
-		String bildPath = werIstDasPath + "bildnr" + bildNrString + ".jpg";
-		//System.out.println("path " + bildPath);
-		ImageIcon bildIcon = new ImageIcon(bildPath);
+		System.out.println("path: "+path);
+		ImageIcon bildIcon = new ImageIcon(path);
 		if(bildIcon.getIconWidth()<0) {
-			System.out.println("ERROR wer ist das bildpath existiert nicht!");
+			System.out.println("ERROR wer ist das bildpath existiert nicht oder ist kein bild!");
 			return panel;
 		}
 		int bildWidth = 1500;
@@ -168,6 +154,12 @@ public class Presentation implements Runnable {
 		else if(lastPanelName == overviewPanelNameString) {
 			displayPanelInFrame(getOverviewPanel());
 		}
+		else if(vorletztePanelName == woLiegtWasPanelNameString) {
+			woLiegtWasPresentationStarten();
+		}
+		else if(vorletztePanelName == schatztnPanelNameString) {
+			schatztnPresentationStarten();
+		}
 		else {
 			System.out.println("ERROR LAST PANEL KEIN NAME DES LAST PANELS GEFUNDEN");
 		}
@@ -184,6 +176,12 @@ public class Presentation implements Runnable {
 		}
 		else if(vorletztePanelName == overviewPanelNameString) {
 			displayPanelInFrame(getOverviewPanel());
+		}
+		else if(vorletztePanelName == woLiegtWasPanelNameString) {
+			woLiegtWasPresentationStarten();
+		}
+		else if(vorletztePanelName == schatztnPanelNameString) {
+			schatztnPresentationStarten();
 		}
 		else {
 			System.out.println("ERROR VORLETZTE PANEL KEIN NAME DES VORLETZTEN PANELS GEFUNDEN");
@@ -202,9 +200,9 @@ public class Presentation implements Runnable {
 	    int teamPicturesYpos = 200;
 	    int teamPicturesWidth = 500;
 	    int teamPicturesHeight = teamPicturesWidth;
-	    JLabel team1 = putPictureInPanel(team1Icon, panel, teamPicturesXpos,teamPicturesYpos,teamPicturesWidth,teamPicturesHeight);
-	    JLabel team2 = putPictureInPanel(team2Icon, panel, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth,teamPicturesYpos,teamPicturesWidth,teamPicturesHeight);
 	    
+	    int punktYpos = teamPicturesYpos + teamPicturesHeight;
+
 	    int alleTrinkenSize = 150;
 	    if(settings.getIntSetting(settings.settingsKeyPunkteTeam1) % 5 ==0 && punkteTeam1WarenNochNieSoHoch) {
 	    	putPictureInPanel(alleTrinkenIcon, panel, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth + teamPicturesWidth-alleTrinkenSize ,teamPicturesYpos,alleTrinkenSize,alleTrinkenSize);
@@ -225,10 +223,15 @@ public class Presentation implements Runnable {
 	    
 	    
 	    
-	    createTextField(panel,String.valueOf(settings.getIntSetting(settings.settingsKeyPunkteTeam1)), teamPicturesXpos, teamPicturesYpos + teamPicturesHeight-125, teamPicturesWidth, 300, 100);
+	    JLabel team1 = putPictureInPanel(team1Icon, panel, teamPicturesXpos,teamPicturesYpos,teamPicturesWidth,teamPicturesHeight);
+	    JLabel team2 = putPictureInPanel(team2Icon, panel, defaultFrameWidth-teamPicturesXpos-teamPicturesWidth,teamPicturesYpos,teamPicturesWidth,teamPicturesHeight);
+	    
+	    
+	    
+	    createTextField(panel,String.valueOf(settings.getIntSetting(settings.settingsKeyPunkteTeam1)), teamPicturesXpos, punktYpos, teamPicturesWidth, 300, 100);
 	    
 
-	    createTextField(panel,String.valueOf(settings.getIntSetting(settings.settingsKeyPunkteTeam2)), defaultFrameWidth-teamPicturesXpos-teamPicturesWidth, teamPicturesYpos + teamPicturesHeight-125, teamPicturesWidth, 300, 100);
+	    createTextField(panel,String.valueOf(settings.getIntSetting(settings.settingsKeyPunkteTeam2)), defaultFrameWidth-teamPicturesXpos-teamPicturesWidth, punktYpos, teamPicturesWidth, 300, 100);
 	    
 	    
 	    
