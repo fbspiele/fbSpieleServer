@@ -354,9 +354,11 @@ public class FbSpieleServer {
 		initialStartButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 
+    	        int dialogResult = JOptionPane.showConfirmDialog(null, "sicher alle punkte und so resetten?");
 				//System.out.println(initialStartButton.getText() + " clicked");
-				
-				presentation.initialReset();
+				if (dialogResult == JOptionPane.YES_OPTION) {
+					presentation.initialReset();					
+				}
 				
 			}
 		});
@@ -396,6 +398,56 @@ public class FbSpieleServer {
 	}
 	
 	static JPanel getPasswordSaltPanel() {
+		
+
+    	
+    	JButton useEncryptionButton = new JButton();
+    	useEncryptionButton.setText("use encryption?");
+    	useEncryptionButton.addActionListener(new ActionListener(){
+    		public void actionPerformed(ActionEvent arg0) {
+				//1. Create the frame.
+				JFrame frame = new JFrame("select wo liegt was file");
+				frame.setLayout(new GridLayout(3,1));
+	
+				//2. Optional: What happens when the frame closes?
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	
+		    	JButton buttonTrue = new JButton();
+		    	buttonTrue.setText("jo");
+		    	buttonTrue.addActionListener(new ActionListener(){
+		    		public void actionPerformed(ActionEvent arg0) {
+		    	        	settings.saveBooleanSetting(settings.settingsKeyUseEncryption, true);
+		    	        	JOptionPane.showMessageDialog(null, "sollte wahrscheinlich alles neu starten!");
+					        frame.dispose();
+						}});
+		    	frame.add(buttonTrue);
+		    	JButton buttonFalse = new JButton();
+		    	buttonFalse.setText("nö");
+		    	buttonFalse.addActionListener(new ActionListener(){
+		    		public void actionPerformed(ActionEvent arg0) {
+	    	        		settings.saveBooleanSetting(settings.settingsKeyUseEncryption, false);
+	    	        		JOptionPane.showMessageDialog(null, "sollte wahrscheinlich alles neu starten!");
+					        frame.dispose();
+						}});
+		    	frame.add(buttonFalse);
+		    	
+		    	JButton buttonCancel = new JButton();
+		    	buttonCancel.setText("cancel");
+		    	buttonCancel.addActionListener(new ActionListener(){
+		    		public void actionPerformed(ActionEvent arg0) {
+		    				
+					        frame.dispose();
+						}});
+		    	frame.add(buttonCancel);
+				
+				//4. Size the frame.
+				frame.pack();
+	
+				//5. Show it.
+				frame.setVisible(true);    			
+			}});
+    	
+		
 		final JButton newPasswordButton = new JButton();
 		newPasswordButton.setText("set new password");
 		newPasswordButton.addActionListener(new ActionListener(){
@@ -421,6 +473,7 @@ public class FbSpieleServer {
 		
 		final JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    	panel.add(useEncryptionButton);
 		panel.add(newPasswordButton);
 		panel.add(newSaltButton);
 		return panel;		

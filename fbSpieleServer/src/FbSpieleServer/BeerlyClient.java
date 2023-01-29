@@ -196,10 +196,16 @@ public class BeerlyClient {
 
 	public void sendToSocket(String msg) {
 		try {
-			String encryptedMsg = this.crypto.encryptHex(msg);
-			System.out.println("sending to "+name+"("+socket.getInetAddress()+")"+"\nmessage\t"+msg+"\nencrypted\t"+encryptedMsg);
+			String encryptedMsg;
+        	if(FbSpieleServer.settings.getBooleanSetting(FbSpieleServer.settings.settingsKeyUseEncryption, FbSpieleServer.settings.defaultUseEncryption)) {
+        		encryptedMsg = this.crypto.encryptHex(msg);
+        	}
+        	else {
+        		encryptedMsg = msg;
+        	}
+			System.out.println("sending to "+name+"("+socket.getInetAddress()+")"+"\n\tmessage\n\t\t"+msg+"\n\tencrypted\n\t\t"+encryptedMsg);
 			PrintWriter printWriter = new PrintWriter(this.socket.getOutputStream(),true);
-			printWriter.println(encryptedMsg);
+			printWriter.println(encryptedMsg+"\n\n\n");
 			printWriter.flush();	//avoids that 2 message will be received at once (-> wouldn't be able to be decrypted)
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

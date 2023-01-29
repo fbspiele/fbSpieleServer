@@ -25,7 +25,10 @@ public class Settings {
 	static final String settingsKeyBisherMaxPunkteTeam2 = "bisher maximale punkte team 2";
 	static int bisherMaximalePunkteTeam2 = 0;
 	
-	
+
+	static final String settingsKeyUseEncryption = "use encryption?";
+	static boolean defaultUseEncryption = false;
+	static boolean useEncryption = defaultUseEncryption;
 	
 	static final String settingsKeyEncryptedPassword = "encrypted password";
 	static String encryptedPassword = "";
@@ -45,6 +48,7 @@ public class Settings {
     	punkteTeam2 = getIntSetting(settingsKeyPunkteTeam2);
     	bisherMaximalePunkteTeam1 = getIntSetting(settingsKeyBisherMaxPunkteTeam1);
     	bisherMaximalePunkteTeam2 = getIntSetting(settingsKeyBisherMaxPunkteTeam2);
+    	useEncryption = getBooleanSetting(settingsKeyUseEncryption, defaultUseEncryption);
     }
     
     public Settings(String settingsFilePath) {
@@ -55,9 +59,9 @@ public class Settings {
     static String getDefaultSettingsFileText() {
 		String defaultSettingsFileText = "this is the default fiel" + "\n" + "make the appropriate changes here" + "\n" + "then rename this file to settings.txt and rerun the server" + "\n\n";
 
-		
-		defaultSettingsFileText = defaultSettingsFileText + settingsKeyEncryptedPassword + "\n" + "my super nice password (encrypted)" + "\n\n";
-		defaultSettingsFileText = defaultSettingsFileText + settingsKeyEncryptedSalt + "\n" + "my super nice salt (encrypted)" + "\n\n";
+		defaultSettingsFileText = defaultSettingsFileText + settingsKeyUseEncryption + "\n" + "false" + "\n\n";		
+		defaultSettingsFileText = defaultSettingsFileText + settingsKeyEncryptedPassword + "\n" + "0939d55880794d2e5c3353cb46c02ee42dfbf6794ef8e3bd19df0ddc1ca4c671afd3d2a6656c519a6a02e4e0" + "\n\n";		// from password "default_password"
+		defaultSettingsFileText = defaultSettingsFileText + settingsKeyEncryptedSalt + "\n" + "6563e0819237a13cfaa765016601700f02705aeebafe5dd3a55a55ac2dabf2287dbd30934b99bbed" + "\n\n";		// from salt "default_salt"
 		
 		defaultSettingsFileText = defaultSettingsFileText + settingsKeyTeam1 + "\n" + "team1" + "\n\n";
 		defaultSettingsFileText = defaultSettingsFileText + settingsKeyTeam2 + "\n" + "team2" + "\n\n";
@@ -67,6 +71,7 @@ public class Settings {
 
 		defaultSettingsFileText = defaultSettingsFileText + settingsKeyBisherMaxPunkteTeam1 + "\n" + "0" + "\n\n";
 		defaultSettingsFileText = defaultSettingsFileText + settingsKeyBisherMaxPunkteTeam2 + "\n" + "0" + "\n\n";
+
 		
 		return defaultSettingsFileText;
     }
@@ -106,6 +111,55 @@ public class Settings {
     	settingsList = settings.split("\n");
     	return true;
     }
+
+    public static boolean getBooleanSetting(String settingKey, boolean defaultValue) {
+    	if(!refreshSettingsStringList(false)) {
+    		return defaultValue;
+    	}
+
+    	String newValue = null;
+    	for(int i = 0; i<settingsList.length; i++) {
+    		if(settingsList[i].contentEquals(settingKey)) {
+    			newValue = settingsList[i+1];
+    			//System.out.println("loading: "+ settingKey+": " + newValue);
+    		}
+    	}
+		Boolean retValue = null;
+		String[] trueValues = {"yes","Yes","YES","1","True","TRUE","true","ja","JA","Ja","wahr","Wahr","WAHR"};
+		String[] falseValues = {"no","No","NO","0","False","FALSE","false","nein","NEIN","Nein","falsch","Falsch","FALSCH"};
+		for(String trueValue : trueValues) {
+			if(newValue.contains(trueValue)) {
+				retValue = true;
+			}
+		}
+		for(String falseValue : falseValues) {
+			if(newValue.contains(falseValue)) {
+				retValue = false;
+			}
+		}
+		if (retValue == null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("ERROR: trying to find boolean value for \""+settingKey+"\" but neither in [");
+			for (int i = 0; i < trueValues.length; i++) {
+				sb.append(trueValues[i]);
+				if(i!=trueValues.length-1) {
+					sb.append(", ");
+				}
+			}
+			sb.append("] nor in [");
+			for (int i = 0; i < trueValues.length; i++) {
+				sb.append(falseValues[i]);
+				if(i!=falseValues.length-1) {
+					sb.append(", ");
+				}
+			}
+			sb.append("]");
+			System.out.println(sb.toString());
+			retValue = defaultUseEncryption;
+		}
+		//System.out.println("loading setting \""+settingKey+"\":"+ retValue);
+		return retValue;
+    }
     
     public static int getIntSetting(String settingKey) {
     	if(!refreshSettingsStringList(false)) {
@@ -120,6 +174,7 @@ public class Settings {
     		}
     	}
     	try {
+    		//System.out.println("loading setting \""+settingKey+"\":"+ newValue);
     		return Integer.valueOf(newValue);
     	}
     	catch (Exception e) {
@@ -140,6 +195,7 @@ public class Settings {
     			//System.out.println("laoding: "+ settingKey+": " + newValue);
     		}
     	}
+		//System.out.println("loading setting \""+settingKey+"\":"+ newValue);
 		return newValue;
     	
     }
@@ -157,6 +213,23 @@ public class Settings {
     	for(int i = 0; i<settingsList.length; i++) {
     		if(settingsList[i].contentEquals(settingKey)) {
     			settingsList[i+1] = newValue;
+    			//System.out.println("saving: "+ settingKey+": " + newValue);
+    		}
+    	}
+    	saveSettingsList();
+    }
+
+    static void saveBooleanSetting(String settingKey, boolean newValue) {
+    	for(int i = 0; i<settingsList.length; i++) {
+    		if(settingsList[i].contentEquals(settingKey)) {
+    			String newValueString = "";
+    			if(newValue) {
+    				newValueString = "true";
+    			}
+    			else {
+    				newValueString = "false";
+    			}
+    			settingsList[i+1] = newValueString;
     			//System.out.println("saving: "+ settingKey+": " + newValue);
     		}
     	}

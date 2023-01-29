@@ -29,15 +29,27 @@ public class ListeningThread implements Runnable {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(client.socket.getInputStream()));
             while ( (data = in.readLine()) != null && client.socket.isConnected() && client.socket.isBound() && !stop) {
-            	System.out.println("encrypted\n\t"+data);
-            	String decryptedData = client.crypto.decryptHex(data);
-            	if(decryptedData!=null) {
-            		
-                    datenVerarbeiten(decryptedData);
-            	}
-            	else {
-            		throw new Exception("decryptedData has error");
-            	}
+        		System.out.println("receiving from "+client.name+"("+client.socket.getInetAddress()+")\n"+"\tencrypted\n\t\t"+data);
+                for (String message : data.split("\n\n\n")){	// send always "\n\n\n" to signal the end of message (otherwise sometimes adds linebreak if message to long -> tries to decrypt both parts)
+                	message = message.replace("\n","");
+                	if (message.length()>0) {
+                    	String decryptedData;
+                    	boolean decryptTheData = fbSpieleServer.settings.getBooleanSetting(fbSpieleServer.settings.settingsKeyUseEncryption, fbSpieleServer.settings.defaultUseEncryption);
+                    	//System.out.println("decrypt? "+decryptTheData);
+                    	if(decryptTheData) {
+                    		decryptedData = client.crypto.decryptHex(message);
+                    	}
+                    	else {
+                    		decryptedData = message;
+                    	}
+                    	if(decryptedData!=null) {            		
+                            datenVerarbeiten(decryptedData);
+                    	}
+                    	else {
+                    		throw new Exception("decryptedData has error");
+                    	}
+                	}
+                }
             }
             System.out.println("\nconnection closed:" + client.socket.getInetAddress().getHostAddress());
         }
@@ -56,7 +68,7 @@ public class ListeningThread implements Runnable {
 	}
 	
 	public void datenVerarbeiten(String msg) {
-		System.out.println(msg);
+		System.out.println("\tdecrypted\n\t\t"+msg);
 		
 		
 		if(msg.contains("xxxwoLiegtWasMyCoordsPhiABC")) {

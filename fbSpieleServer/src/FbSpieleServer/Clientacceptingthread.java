@@ -39,8 +39,17 @@ public class Clientacceptingthread implements Runnable{
 	        
 	        FbSpieleServer.addClient(beerlyClient);
 
+	        String connectedMessage = "connected";
 
-			new PrintWriter(client.getOutputStream(),true).println(clientCrypto.encryptHex("connected"));
+			String encryptedMsg;
+        	if(FbSpieleServer.settings.getBooleanSetting(FbSpieleServer.settings.settingsKeyUseEncryption, FbSpieleServer.settings.defaultUseEncryption)) {
+        		encryptedMsg = clientCrypto.encryptHex(connectedMessage);
+        	}
+        	else {
+        		encryptedMsg = connectedMessage;
+        	}
+
+			new PrintWriter(client.getOutputStream(),true).println(encryptedMsg+"\n\n\n");
 			
 	        listeningThread = new Thread(new ListeningThread(fbSpieleServer, beerlyClient));
 	        listeningThread.setName("listening_to_"+client.getInetAddress().getHostAddress());
