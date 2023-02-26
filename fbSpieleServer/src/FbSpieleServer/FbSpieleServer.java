@@ -5,8 +5,11 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -872,14 +875,7 @@ public class FbSpieleServer {
 		
 		
     	Path path = Path.of(woLiegtWasSubfolder,filename);
-    	String fileContent;
-		try {
-			 fileContent = new String(Files.readString(path));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return -1;
-		}
+		String fileContent = readFile(path);
 		
 		System.out.println(fileContent);
 		woliegtWasList = new ArrayList<>();
@@ -890,13 +886,24 @@ public class FbSpieleServer {
     		System.out.println(lines[i]);
     		
     		if(lines[i].contains(",")&&i!=0) {
-    			counter++;
-    			WoLiegtWasObject object = new WoLiegtWasObject();
-    			object.name = lines[i-1];
     			String[] substrings = lines[i].split(",");
-    			object.theta = Double.valueOf(substrings[0]);	// google macht zuerst theta dann phi
-    			object.phi = Double.valueOf(substrings[1]);
-    			woliegtWasList.add(object);
+    			boolean IsCoordinates = true;
+    			try {
+        			Double.valueOf(substrings[0]);	// google macht zuerst theta dann phi
+        			Double.valueOf(substrings[1]);
+    			}
+    			catch (Exception e) {
+    				IsCoordinates = false;
+    			}
+    			if(IsCoordinates) {
+        			counter++;
+        			WoLiegtWasObject object = new WoLiegtWasObject();
+        			object.name = lines[i-1];
+        			
+        			object.theta = Double.valueOf(substrings[0]);	// google macht zuerst theta dann phi
+        			object.phi = Double.valueOf(substrings[1]);
+        			woliegtWasList.add(object);    				
+    			}
     		}
     	}
 
@@ -1187,21 +1194,32 @@ public class FbSpieleServer {
 		
 	}
 	
-	
+
+
+	static String readFile(Path path) {
+		String stringPath = path.toString();
+		return readFile(stringPath);
+	}
+	static String readFile(String path) {
+		try {
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(path),"utf-8"));
+			StringBuilder sb = new StringBuilder();
+			for (String line; (line = bufferedReader.readLine()) != null; sb.append(line+"\n"));
+			return sb.toString();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "-1";
+		}
+		
+	}
 	
 
 	
 	static int upateSchatztnFragen(String filename) {
 
     	Path path = Path.of(schatztnSubfolder, filename);
-    	String fileContent;
-		try {
-			 fileContent = new String(Files.readString(path));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return -1;
-		}
+		String fileContent = readFile(path);
 		
 		System.out.println(fileContent);
 		schatztnFrageList = new ArrayList<>();
